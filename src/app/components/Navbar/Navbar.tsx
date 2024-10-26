@@ -1,32 +1,149 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Dropdown from "../Dropdown/Dropdown";
 import styles from "./Navbar.module.css";
 import Image from "next/image";
 
 export default function Navbar() {
+  const [dropMenu, setDropMenu] = useState<boolean>(false);
+  const [activeLink, setActiveLink] = useState<string | null>(null);
+  const [dropdownData, setDropdownData] = useState<{
+    title: string;
+    icon: string;
+    title2: string;
+    icon2: string;
+    leftOptions: string[];
+    rightOptions: string[];
+  } | null>(null);
+  const [tabs, setTabs] = useState<string[]>([]); // Estado para abas
+
+  const handleToggleDropdown = (link: string) => {
+    // Lógica para abrir/fechar o dropdown
+    if (activeLink === link) {
+      setDropMenu(false);
+      setActiveLink(null);
+      setDropdownData(null);
+    } else {
+      let newDropdownData;
+
+      switch (link) {
+        case "Vendas":
+          newDropdownData = {
+            title: "Cadastros",
+            icon: "/icons/cadastro-icon.svg",
+            title2: "Processos",
+            icon2: "/icons/processos-icon.svg",
+            leftOptions: ["Cadastro de Produtos", "Cadastro de Clientes", "Cadastro de Vendedores", "Cadastro de Transportadoras"],
+            rightOptions: ["Pedido de Venda", "Transmissão de Nota"],
+          };
+          break;
+        case "Compras":
+          newDropdownData = {
+            title: "Cadastros",
+            icon: "/icons/cadastro-icon.svg",
+            title2: "Processos",
+            icon2: "/icons/processos-icon.svg",
+            leftOptions: ["Cadastro de Fornecedores"],
+            rightOptions: ["Entrada de Nota"],
+          };
+          break;
+        case "Financeiro":
+          newDropdownData = {
+            title: "Finanças",
+            icon: "/icons/financas-Icon.svg",
+            title2: "", 
+            icon2: "",
+            leftOptions: ["Contas a Pagar", "Contas a Receber"],
+            rightOptions: [""],
+          };
+          break;
+        case "Relatórios":
+          newDropdownData = {
+            title: "Estoque",
+            icon: "/icons/estoque-Icon.svg",
+            title2: "Valores",
+            icon2: "/icons/valores-Icon.svg",
+            leftOptions: ["Código do Produto", "Nome do Produto", "Quantidade em Estoque"],
+            rightOptions: ["Preço de Venda", "Preço de Compra"],
+          };
+          break;
+        default:
+          break;
+      }
+      if (newDropdownData) {
+        setDropdownData(newDropdownData);
+        setDropMenu(true);
+        setActiveLink(link);
+      }
+    }
+  };
+
+  const handleOptionClick = (option: string) => {
+    if (tabs.length < 4) {
+      setTabs((prev) => [...prev, option]); // Adiciona nova aba
+    } else {
+      alert("Limite de abas atingido.");
+    }
+  };
+
+  const handleTabClick = (option: string) => {
+    console.log(`Aba clicada: ${option}`);
+  };
+
+  const handleCloseTab = (tabToClose: string) => {
+    setTabs((prev) => prev.filter(tab => tab !== tabToClose)); // Remove a aba
+  };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (!target.closest(`.${styles.lowerNavLinks}`)) {
+      setDropMenu(false);
+      setActiveLink(null);
+      setDropdownData(null);
+    }
+  };
+
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      handleClickOutside(event);
+    };
+
+    document.addEventListener("click", handleDocumentClick);
+    return () => {
+      document.removeEventListener("click", handleDocumentClick);
+    };
+  }, []);
+
   return (
     <>
       <nav>
         <div className={styles.upperDiv}>
-
-            <Image
-              src={"/images/logo-onsate.png"}
-              width={135}
-              height={41}
-              alt="logo-onsate"
-            />
-
+          <Image
+            src={"/images/logo-onsate.png"}
+            width={135}
+            height={41}
+            alt="logo-onsate"
+          />
           <div className={styles.divTabs}>
-            <div className={styles.linkTabs}>
-              <p className={styles.pTexts}>Cadastrar Produtos</p>
-              <Image
-                src={"/icons/close-icon.svg"}
-                width={18}
-                height={18}
-                alt="close-icon"
-              />
-            </div>
+            {tabs.map((tab) => (
+              <div className={styles.linkTabs} key={tab} onClick={() => handleTabClick(tab)}>
+                <p className={styles.pTexts}>{tab}</p>
+                <Image
+                  src={"/icons/close-icon.svg"}
+                  width={18}
+                  height={18}
+                  alt="close-icon"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Evita que o click do close feche a aba
+                    handleCloseTab(tab);
+                  }} // Fecha a aba
+                />
+              </div>
+            ))}
           </div>
           <div className={styles.divIcons}>
-            <div className={styles.hoverIcons}>
+          <div className={styles.hoverIcons}>
               <svg
                 width="28"
                 height="28"
@@ -59,61 +176,33 @@ export default function Navbar() {
         <div className={styles.lowerDiv}>
           <div className={styles.lowerDivLinks}>
             <div className={styles.lowerNavLinks}>
-              <div>
-                <p>Vendas</p>
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
+              {["Vendas", "Compras", "Financeiro", "Relatórios"].map((link) => (
+                <div
+                  key={link}
+                  className={`${styles.lowerNavLink} ${activeLink === link ? styles.activeLink : ""}`}
+                  onClick={() => handleToggleDropdown(link)}
                 >
-                  <path d="M12 15L7 10H17L12 15Z" fill="white" />
-                </svg>
-              </div>
-              <div>
-                {" "}
-                <p>Compras</p>
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M12 15L7 10H17L12 15Z" fill="white" />
-                </svg>
-              </div>
-              <div>
-                {" "}
-                <p>Financeiro</p>
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M12 15L7 10H17L12 15Z" fill="white" />
-                </svg>
-              </div>
-              <div>
-                {" "}
-                <p>Relatórios</p>
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M12 15L7 10H17L12 15Z" fill="white" />
-                </svg>
-              </div>
+                  <p>{link}</p>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 15L7 10H17L12 15Z" fill="white" />
+                  </svg>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </nav>
+      {dropMenu && dropdownData && (
+        <Dropdown
+          title={dropdownData.title}
+          icon={dropdownData.icon}
+          title2={dropdownData.title2}
+          icon2={dropdownData.icon2}
+          leftOptions={dropdownData.leftOptions}
+          rightOptions={dropdownData.rightOptions}
+          onOptionClick={handleOptionClick}
+        />
+      )}
     </>
   );
 }

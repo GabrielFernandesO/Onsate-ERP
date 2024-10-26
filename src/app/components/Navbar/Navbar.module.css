@@ -7,14 +7,20 @@
     align-items: center;
 }
 
+.upperDiv img{
+    cursor: pointer;
+}
+
 .divIcons{
     width: 86px;
     display: flex;
+    align-items: center;
     justify-content: space-between;
 }
 
 .hoverIcons{
     cursor: pointer;
+    display: flex;
 }
 
 .hoverIcons:hover path{
@@ -42,6 +48,7 @@
     user-select: none;
     font-weight: 600;
     font-size: 16px;
+    margin-right: 10px;
 }
 
 .linkTabs:hover{
@@ -92,12 +99,21 @@
     transition: 300ms;
     animation: ease-in-out;
     font: 700;
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .lowerNavLinks div:hover{
     background-color: #187CA8
 }
+
+
+
+.activeLink {
+    background-color: #187CA8; /* Cor do dropdown */
+  }
+
+
+
 
 
 
