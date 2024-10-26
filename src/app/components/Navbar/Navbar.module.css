@@ -51,10 +51,6 @@
     margin-right: 10px;
 }
 
-.linkTabs:hover{
-    background-color: #175d7a;
-}
-
 .linkTabs img{
     margin-right: 10px;
     cursor: pointer;
@@ -113,7 +109,16 @@
   }
 
 
+.activeLinkTab {
+    background-color: rgba(255, 255, 255, 1); /* Cor do dropdown */
+    color: #12678b; /* Mantenha a cor do texto visível */
+}
 
+.activeLinkTab img{
+    background-color: #12678b;
+}
 
-
+.activeLinkTab img:hover{
+    background-color: #1fa7e2;
+}
 

@@ -5,7 +5,11 @@ import Dropdown from "../Dropdown/Dropdown";
 import styles from "./Navbar.module.css";
 import Image from "next/image";
 
-export default function Navbar() {
+interface OnTabChangeProps {
+  onTabChange: (tab: string | null) => void; // Altera o tipo para uma função
+}
+
+export default function Navbar({onTabChange}:OnTabChangeProps) {
   const [dropMenu, setDropMenu] = useState<boolean>(false);
   const [activeLink, setActiveLink] = useState<string | null>(null);
   const [dropdownData, setDropdownData] = useState<{
@@ -17,6 +21,8 @@ export default function Navbar() {
     rightOptions: string[];
   } | null>(null);
   const [tabs, setTabs] = useState<string[]>([]); // Estado para abas
+  const [activeTab, setActiveTab] = useState<string | null>(null);
+
 
   const handleToggleDropdown = (link: string) => {
     // Lógica para abrir/fechar o dropdown
@@ -79,20 +85,27 @@ export default function Navbar() {
     }
   };
 
-  const handleOptionClick = (option: string) => {
-    if (tabs.length < 4) {
-      setTabs((prev) => [...prev, option]); // Adiciona nova aba
+    const handleOptionClick = (option: string) => {
+    if (!tabs.includes(option) && tabs.length < 4) {
+      setTabs((prev) => [...prev, option]);
+      setActiveTab(option); // Define a aba ativa ao clicar
+      onTabChange(option); // Notifica a página sobre a mudança de aba
     } else {
-      alert("Limite de abas atingido.");
+      alert("Limite de abas atingido ou aba já aberta.");
     }
   };
 
-  const handleTabClick = (option: string) => {
-    console.log(`Aba clicada: ${option}`);
+  const handleTabClick = (tab: string) => {
+    setActiveTab(tab); // Altera a aba ativa
+    onTabChange(tab); // Notifica a página sobre a mudança de aba
   };
 
   const handleCloseTab = (tabToClose: string) => {
-    setTabs((prev) => prev.filter(tab => tab !== tabToClose)); // Remove a aba
+    setTabs((prev) => prev.filter(tab => tab !== tabToClose));
+    if (activeTab === tabToClose) {
+      setActiveTab(null); // Reseta a aba ativa se a aba fechada for a ativa
+      onTabChange(null); // Notifica a página que não há aba ativa
+    }
   };
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -125,9 +138,9 @@ export default function Navbar() {
             height={41}
             alt="logo-onsate"
           />
-          <div className={styles.divTabs}>
+          <div className={`${styles.divTabs}`}>
             {tabs.map((tab) => (
-              <div className={styles.linkTabs} key={tab} onClick={() => handleTabClick(tab)}>
+              <div className={`${styles.linkTabs} ${activeTab === tab ? styles.activeLinkTab : ''}`} key={tab} onClick={() => handleTabClick(tab)}>
                 <p className={styles.pTexts}>{tab}</p>
                 <Image
                   src={"/icons/close-icon.svg"}

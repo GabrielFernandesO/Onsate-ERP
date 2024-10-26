@@ -4,3 +4,7 @@
     background-position: center;
     background-size: cover;
 }
+
+.noBackground {
+    background: #F5F7FA; 
+}
