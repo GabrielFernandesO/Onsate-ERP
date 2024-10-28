@@ -1,6 +1,7 @@
 import styles from "./Dropdown.module.css";
 import Image from "next/image";
 
+//Interface para tipagem das props recebidas no componente
 interface DropdownProps {
   title: string;
   icon: string;
@@ -11,6 +12,7 @@ interface DropdownProps {
   onOptionClick: (option: string) => void;
 }
 
+//Componente DropDown
 export default function Dropdown({
   title,
   icon,
@@ -20,6 +22,10 @@ export default function Dropdown({
   rightOptions,
   onOptionClick,
 }: DropdownProps) {
+
+  //Aqui apenas renderiza os dados recebidos para a construção desse componente
+  //Toda a lógica das tabs está na navBar
+
   return (
     <div className={styles.expandDiv}>
       <div className={styles.containerLeft}>

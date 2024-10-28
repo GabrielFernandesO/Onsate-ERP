@@ -1,15 +1,26 @@
 "use client";
 
+//Imports
 import { useState, useEffect } from "react";
 import Dropdown from "../Dropdown/Dropdown";
 import styles from "./Navbar.module.css";
 import Image from "next/image";
 
+//Interface para tipar as props que vem para este componente
 interface OnTabChangeProps {
-  onTabChange: (tab: string | null) => void; // Altera o tipo para uma função
+  onTabChange: (tab: string | null) => void;
+  setProdutosData: React.Dispatch<React.SetStateAction<string>>;
+  setClientesData: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export default function Navbar({onTabChange}:OnTabChangeProps) {
+//Component Navbar
+export default function Navbar({
+  onTabChange,
+  setProdutosData,
+  setClientesData,
+}: OnTabChangeProps) {
+
+  //States
   const [dropMenu, setDropMenu] = useState<boolean>(false);
   const [activeLink, setActiveLink] = useState<string | null>(null);
   const [dropdownData, setDropdownData] = useState<{
@@ -20,17 +31,22 @@ export default function Navbar({onTabChange}:OnTabChangeProps) {
     leftOptions: string[];
     rightOptions: string[];
   } | null>(null);
-  const [tabs, setTabs] = useState<string[]>([]); // Estado para abas
+  const [tabs, setTabs] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
-
+  //Função que lida com abertura e fechamento do dropdown
   const handleToggleDropdown = (link: string) => {
-    // Lógica para abrir/fechar o dropdown
+
+    //Caso tenha  um link que ja está ativo (Que ja foi clicado)
+    //Fecha o dropdown e limpa o link ativo e as props
     if (activeLink === link) {
       setDropMenu(false);
       setActiveLink(null);
       setDropdownData(null);
     } else {
+
+      //Caso o Link clicado corresponda a algum destes cases abaixo
+      //Estas props serão armazenadas na let newDropDownData
       let newDropdownData;
 
       switch (link) {
@@ -40,7 +56,12 @@ export default function Navbar({onTabChange}:OnTabChangeProps) {
             icon: "/icons/cadastro-icon.svg",
             title2: "Processos",
             icon2: "/icons/processos-icon.svg",
-            leftOptions: ["Cadastro de Produtos", "Cadastro de Clientes", "Cadastro de Vendedores", "Cadastro de Transportadoras"],
+            leftOptions: [
+              "Cadastro de Produtos",
+              "Cadastro de Clientes",
+              "Cadastro de Vendedores",
+              "Cadastro de Transportadoras",
+            ],
             rightOptions: ["Pedido de Venda", "Transmissão de Nota"],
           };
           break;
@@ -58,7 +79,7 @@ export default function Navbar({onTabChange}:OnTabChangeProps) {
           newDropdownData = {
             title: "Finanças",
             icon: "/icons/financas-Icon.svg",
-            title2: "", 
+            title2: "",
             icon2: "",
             leftOptions: ["Contas a Pagar", "Contas a Receber"],
             rightOptions: [""],
@@ -70,13 +91,21 @@ export default function Navbar({onTabChange}:OnTabChangeProps) {
             icon: "/icons/estoque-Icon.svg",
             title2: "Valores",
             icon2: "/icons/valores-Icon.svg",
-            leftOptions: ["Código do Produto", "Nome do Produto", "Quantidade em Estoque"],
+            leftOptions: [
+              "Código do Produto",
+              "Nome do Produto",
+              "Quantidade em Estoque",
+            ],
             rightOptions: ["Preço de Venda", "Preço de Compra"],
           };
           break;
         default:
           break;
       }
+
+      //Caso alguma condição do Switch seja satisfeita
+      //Ou seja a variável criada acima obterá um valor
+      //E entrará no if para preencher os states que serão enviados ao dropdown
       if (newDropdownData) {
         setDropdownData(newDropdownData);
         setDropMenu(true);
@@ -85,46 +114,71 @@ export default function Navbar({onTabChange}:OnTabChangeProps) {
     }
   };
 
-    const handleOptionClick = (option: string) => {
+  //Função que define a quantidade de abas que serão abertas e o seu limite.
+  const handleOptionClick = (option: string) => {
     if (!tabs.includes(option) && tabs.length < 4) {
       setTabs((prev) => [...prev, option]);
       setActiveTab(option); // Define a aba ativa ao clicar
-      onTabChange(option); // Notifica a página sobre a mudança de aba
-    } else {
-      alert("Limite de abas atingido ou aba já aberta.");
+      onTabChange(option); // Notifica a page principal sobre a mudança de aba
+    }else if(tabs.includes(option)){
+      alert("aba já aberta.");
+    }
+     else {
+      alert("Limite de abas atingido.");
     }
   };
 
+  //Função que define qual aba está ativa através do click, e muda o CSS da aba ativa.
+  //Ou seja, clicou em uma aba ela se torna a ativa.
   const handleTabClick = (tab: string) => {
     setActiveTab(tab); // Altera a aba ativa
-    onTabChange(tab); // Notifica a página sobre a mudança de aba
+    onTabChange(tab); // Notifica a page principal sobre a mudança de aba
   };
 
+  //Função que lida com o fechamento de abas e reset de dados das paginas
   const handleCloseTab = (tabToClose: string) => {
-    setTabs((prev) => prev.filter(tab => tab !== tabToClose));
+    //Pega os dados atuals de tabs com uso do prev
+    //E faz um filtro removendo a pagina que é igual ao parametro recebido aqui
+    setTabs((prev) => prev.filter((tab) => tab !== tabToClose));
     if (activeTab === tabToClose) {
-      setActiveTab(null); // Reseta a aba ativa se a aba fechada for a ativa
-      onTabChange(null); // Notifica a página que não há aba ativa
+      setActiveTab(null);
+      onTabChange(null);
+    }
+
+    // Resetar os dados da aba específica
+    switch (tabToClose) {
+      case "Cadastro de Produtos":
+        // Resetar os dados do Cadastro de Produtos
+        setProdutosData("");
+        break;
+      case "Cadastro de Clientes":
+        // Resetar os dados do Cadastro de Clientes
+        setClientesData("");
+        break;
+      default:
+        break;
     }
   };
 
+  //Função que lida com o fechamento do dropdown caso clicado fora de sua área
   const handleClickOutside = (event: MouseEvent) => {
-    const target = event.target as HTMLElement;
-    if (!target.closest(`.${styles.lowerNavLinks}`)) {
-      setDropMenu(false);
-      setActiveLink(null);
-      setDropdownData(null);
+    const target = event.target as HTMLElement; // Obtém o elemento que foi clicado
+    if (!target.closest(`.${styles.lowerNavLinks}`)) { // Verifica se o elemento clicado está dentro do dropdown
+      setDropMenu(false); // Fecha o dropdown
+      setActiveLink(null); // Reseta o link ativo (se houver)
+      setDropdownData(null); // Limpa os dados do dropdown (se houver)
     }
   };
 
+  //useEffect para ser chamado quando o Evento de click for realizado
   useEffect(() => {
     const handleDocumentClick = (event: MouseEvent) => {
-      handleClickOutside(event);
+      handleClickOutside(event); // Chama a função para lidar com o clique fora
     };
-
-    document.addEventListener("click", handleDocumentClick);
+  
+    document.addEventListener("click", handleDocumentClick); // Adiciona o listener de clique ao documento
     return () => {
-      document.removeEventListener("click", handleDocumentClick);
+      document.removeEventListener("click", handleDocumentClick); // Remove o listener quando o componente é desmontado
     };
   }, []);
 
@@ -140,7 +194,13 @@ export default function Navbar({onTabChange}:OnTabChangeProps) {
           />
           <div className={`${styles.divTabs}`}>
             {tabs.map((tab) => (
-              <div className={`${styles.linkTabs} ${activeTab === tab ? styles.activeLinkTab : ''}`} key={tab} onClick={() => handleTabClick(tab)}>
+              <div
+                className={`${styles.linkTabs} ${
+                  activeTab === tab ? styles.activeLinkTab : ""
+                }`}
+                key={tab}
+                onClick={() => handleTabClick(tab)}
+              >
                 <p className={styles.pTexts}>{tab}</p>
                 <Image
                   src={"/icons/close-icon.svg"}
@@ -156,7 +216,7 @@ export default function Navbar({onTabChange}:OnTabChangeProps) {
             ))}
           </div>
           <div className={styles.divIcons}>
-          <div className={styles.hoverIcons}>
+            <div className={styles.hoverIcons}>
               <svg
                 width="28"
                 height="28"
@@ -192,11 +252,19 @@ export default function Navbar({onTabChange}:OnTabChangeProps) {
               {["Vendas", "Compras", "Financeiro", "Relatórios"].map((link) => (
                 <div
                   key={link}
-                  className={`${styles.lowerNavLink} ${activeLink === link ? styles.activeLink : ""}`}
+                  className={`${styles.lowerNavLink} ${
+                    activeLink === link ? styles.activeLink : ""
+                  }`}
                   onClick={() => handleToggleDropdown(link)}
                 >
                   <p>{link}</p>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
                     <path d="M12 15L7 10H17L12 15Z" fill="white" />
                   </svg>
                 </div>
@@ -205,6 +273,7 @@ export default function Navbar({onTabChange}:OnTabChangeProps) {
           </div>
         </div>
       </nav>
+      {/* Componente dropdow chamado e suas props enviadas */}
       {dropMenu && dropdownData && (
         <Dropdown
           title={dropdownData.title}
