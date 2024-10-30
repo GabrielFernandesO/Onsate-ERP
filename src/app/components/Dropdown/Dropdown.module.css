@@ -5,17 +5,17 @@
     position: absolute;
     color: white;
     display: flex;
-    padding-left: 260px;
-    padding-top: 25px;
+    padding: 20px 206px;
 }
 
-.containerLeft, .containerRight {
-    min-width: 280px;
-    padding:0px 22px;
+.container{
+    display: flex;
+
 }
+
 
 .containerRight{
-    margin-left: 100px;
+  margin-left: 150px;
 }
 
 

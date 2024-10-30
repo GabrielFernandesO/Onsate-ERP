@@ -57,8 +57,8 @@ export default function Navbar({
             title2: "Processos",
             icon2: "/icons/processos-icon.svg",
             leftOptions: [
-              "Cadastro de Produtos",
               "Cadastro de Clientes",
+              "Cadastro de Produtos",
               "Cadastro de Vendedores",
               "Cadastro de Transportadoras",
             ],
@@ -71,32 +71,32 @@ export default function Navbar({
             icon: "/icons/cadastro-icon.svg",
             title2: "Processos",
             icon2: "/icons/processos-icon.svg",
-            leftOptions: ["Cadastro de Fornecedores"],
-            rightOptions: ["Entrada de Nota"],
+            leftOptions: ["Cadastro de Fornecedores", "Cadastro de Grupo / Sub-Grupo", "Cadastro de Unidade"],
+            rightOptions: ["Entrada de Nota", "Inventário", "Ajuste de Suprimentos"],
           };
           break;
         case "Financeiro":
           newDropdownData = {
-            title: "Finanças",
-            icon: "/icons/financas-Icon.svg",
-            title2: "",
-            icon2: "",
-            leftOptions: ["Contas a Pagar", "Contas a Receber"],
-            rightOptions: [""],
+            title: "Cadastros",
+            icon: "/icons/cadastro-icon.svg",
+            title2: "Finanças",
+            icon2: "/icons/financas-Icon.svg",
+            leftOptions: ["Meio de Pagamento", "Forma de Pagamento", "Centro de Custo", "Plano de Contas"],
+            rightOptions: ["Contas a Pagar", "Contas a Receber", "Caixa"],
           };
           break;
         case "Relatórios":
           newDropdownData = {
-            title: "Estoque",
-            icon: "/icons/estoque-Icon.svg",
-            title2: "Valores",
-            icon2: "/icons/valores-Icon.svg",
+            title: "Relatórios Operacionais",
+            icon: "/icons/report-Icon.svg",
+            title2: "Relatórios Financeiros e Vendas",
+            icon2: "/icons/report-Icon.svg",
             leftOptions: [
-              "Código do Produto",
-              "Nome do Produto",
-              "Quantidade em Estoque",
+              "Relatórios de Clientes",
+              "Relatórios de Estoque",
+              "Relatório de Fornecedores",
             ],
-            rightOptions: ["Preço de Venda", "Preço de Compra"],
+            rightOptions: ["Relatório de Transportadores", "Relatório de Vendas", "Relatórios do Financeiro"],
           };
           break;
         default:
