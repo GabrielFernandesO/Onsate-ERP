@@ -1,7 +1,7 @@
 .tabela {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 12px;
+ margin-top: 30px;
 }
 
 .tabela th {
@@ -105,4 +105,120 @@
 .paginacao button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
+}
+
+
+
+.controlList{
+  display: flex;
+  margin-top: 30px;
+}
+
+
+.inputSearch{
+  display: flex;
+  width: 1350px;
+  align-items: center;
+  height: 40px;
+  background-color: #D9D9D9;
+  padding-right: 10px;
+  border: 1px solid black;
+}
+
+.inputSearch svg{
+  margin-right: 0.1em;
+  cursor: pointer;
+  height: 100%;
+}
+
+.inputSearch svg:hover{
+  background-color: #c7c7c7;
+}
+
+.inputSearch input{
+  background-color: transparent;
+  padding-left: 0.1em;
+  min-width: 350px
+}
+
+.inputSearch input:focus{
+  outline: none; 
+}
+
+.inputSearch input::placeholder {
+   color: black;/* Cor do placeholder (preto, por exemplo) */
+  opacity: 0.5; /* Opacidade (1 é totalmente opaco) */
+  font-weight: 600;
+}
+
+.filterDivInput{
+  display: flex;
+  align-items: center;
+  background-color: #cacaca;
+  height: 100%;
+  padding: 0px 8px;
+  margin-right: 5px;
+  font-weight: 600;
+
+}
+
+.filterDivInput img{
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.inputSearch:focus-within {
+  border: 2px solid black;
+}
+
+.iconsAction{
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+
+}
+
+.icon{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 45px;
+  background-color: #D9D9D9;
+  border: 1px solid black;
+  margin-left: 25px;
+  cursor: pointer;
+}
+
+.icon:hover{
+  background-color: #c7c7c7;
+}
+
+
+.dropDownSearch{
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  background-color: #F1F1F1;
+  border: 1px solid black;
+  z-index: 10;
+}
+
+.optionsFilter{
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.optionsFilter img{
+  margin-right: 1em;
+}
+
+.optionsFilter:hover {
+  background-color: #cacaca !important;
+}
+
+.selected {
+  background-color: #cacaca;
 }
