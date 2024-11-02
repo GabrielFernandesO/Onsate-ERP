@@ -34,6 +34,8 @@ export default function Navbar({
   const [tabs, setTabs] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
+  
+
   //Função que lida com abertura e fechamento do dropdown
   const handleToggleDropdown = (link: string) => {
 
@@ -145,6 +147,8 @@ export default function Navbar({
       onTabChange(null);
     }
 
+    localStorage.setItem('tabs', JSON.stringify(tabs.filter((tab) => tab !== tabToClose)));
+
     // Resetar os dados da aba específica
     switch (tabToClose) {
       case "Cadastro de Produtos":
@@ -181,6 +185,17 @@ export default function Navbar({
       document.removeEventListener("click", handleDocumentClick); // Remove o listener quando o componente é desmontado
     };
   }, []);
+
+  useEffect(() => {
+    const savedTabs = localStorage.getItem('tabs');
+    if (savedTabs) {
+      setTabs(JSON.parse(savedTabs));
+      setActiveTab(JSON.parse(savedTabs)[0] || null);
+    }
+  }, []);
+
+
+
 
   return (
     <>

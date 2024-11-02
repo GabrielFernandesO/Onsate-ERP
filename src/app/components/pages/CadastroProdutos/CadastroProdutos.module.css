@@ -5,4 +5,10 @@
     margin: auto;
     background: white;
     height: 100vh;
+    padding: 30px 55px;
+}
+
+.container h1{
+    font-size: 40px;
+    font-weight: 600;
 }

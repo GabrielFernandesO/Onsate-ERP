@@ -1,0 +1,108 @@
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.tabela th {
+  border: 1px solid #00000070;
+  padding: 8px;
+  text-align: left;
+}
+
+.tabela td {
+  border: 1px solid #00000070;
+  padding: 8px;
+  text-align: left;
+}
+
+.tabela .checkbox {
+  text-align: center;
+}
+
+.tabela th {
+  background-color: #d9d9d9;
+  font-weight: bold;
+}
+
+.tabela tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.tabela tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Estilo para a coluna Selecionar */
+.colunaSelecionar {
+  width: 50px; /* Largura reduzida para a coluna */
+}
+
+.colunaPrecoVenda {
+  width: 140px;
+}
+
+.colunaUnidade {
+  width: 100px;
+}
+
+.colunaDescricao {
+  min-width: 200px; 
+  max-width: 200px;/* Defina um tamanho máximo */
+  overflow: hidden; /* Oculte o overflow */
+  text-overflow: ellipsis; /* Adicione reticências */
+  white-space: nowrap; /* Não quebre a linha */
+}
+
+/* Estilo para a linha selecionada */
+.selecionado {
+  border: 2px solid rgba(0, 0, 255, 0.7);
+}
+
+/* Estilo para a linha par */
+.linhaPar {
+  background-color: #d9d9d98f; /* Cor sólida */
+}
+
+/* Estilo para a linha ímpar */
+.linhaImpar {
+  background-color: rgba(233, 232, 232, 0.801); /* Cor com 28% de opacidade */
+}
+
+.paginacao {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.paginacao div {
+  margin-right: 8px;
+}
+
+.paginacao button {
+  padding: 0px 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: transparent;
+  background-color: transparent;
+  margin-left: 5px;
+  transition: 0.4s;
+  font-weight: bold;
+}
+
+.paginacao button:hover {
+  background-color: #d9d9d9;
+  color: white;
+}
+
+.btnArrowLeft svg {
+  transform: rotate(180deg);
+  transform-origin: center; /* Alinha o ponto de rotação ao centro do SVG */
+}
+
+.paginacao button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
