@@ -130,6 +130,7 @@ const TableData: React.FC = () => {
                   type="checkbox"
                   checked={selecionados[startIndex + index]}
                   onChange={() => handleCheckboxChange(startIndex + index)}
+                  id={`checkBox-${startIndex + index}`}
                 />
               </td>
               <td>{item.codigo}</td>
@@ -163,7 +164,7 @@ const TableData: React.FC = () => {
             <path
               d="M7.979 10L4.1665 6.16667L5.33317 5L10.3332 10L5.33317 15L4.1665 13.8333L7.979 10ZM13.479 10L9.6665 6.16667L10.8332 5L15.8332 10L10.8332 15L9.6665 13.8333L13.479 10Z"
               fill="black"
-              fill-opacity="0.8"
+              fillOpacity="0.8"
             />
           </svg>
         </button>
@@ -184,7 +185,7 @@ const TableData: React.FC = () => {
             <path
               d="M7.979 10L4.1665 6.16667L5.33317 5L10.3332 10L5.33317 15L4.1665 13.8333L7.979 10ZM13.479 10L9.6665 6.16667L10.8332 5L15.8332 10L10.8332 15L9.6665 13.8333L13.479 10Z"
               fill="black"
-              fill-opacity="0.8"
+              fillOpacity="0.8"
             />
           </svg>
         </button>
