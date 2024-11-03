@@ -5,6 +5,7 @@ import styles from "./TableData.module.css";
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 
+//Interface que lida com o o array de dados dos items da tabela
 interface Item {
   codigo: string;
   cdBarra: string;
@@ -15,12 +16,22 @@ interface Item {
   subGrupo: string;
 }
 
+//Interface para Lidar com o Array de items filtrados
+//Ou seja são as opões do dropdown do input de pesquisa
 interface ItemFilter {
   item: string;
   svg: string;
 }
 
+//Interface de Prop do Component
+interface TableDataProps{
+  handleAddProduct: () => void
+}
+
 type ItemKeys = keyof Item;
+
+//Todos os dados sem filtro
+//Aqui deve vir todos os dados do back
 
 const tableData: Item[] = [
   {
@@ -82,6 +93,7 @@ const tableData: Item[] = [
   // Adicione mais itens conforme necessário
 ];
 
+//Array de dados filtrado
 const tableFilter: ItemFilter[] = [
   {
     item: "Código",
@@ -113,9 +125,12 @@ const tableFilter: ItemFilter[] = [
   },
 ];
 
+//Quantidade de items na lista por página
 const ITEMS_PER_PAGE = 3;
 
-const TableData: React.FC = () => {
+
+
+const TableData: React.FC<TableDataProps> = ({handleAddProduct}) => {
   const [selecionados, setSelecionados] = useState<boolean[]>(
     Array(tableData.length).fill(false)
   );
@@ -123,6 +138,11 @@ const TableData: React.FC = () => {
   const [dropDownSearch, setDropDownSearch] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
+
+
+  const toggleAddProduct = () =>{
+    handleAddProduct()
+  }
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -132,9 +152,11 @@ const TableData: React.FC = () => {
     setSelecionados(novosSelecionados);
   };
 
+
+
   const handleNextPage = () => {
     setCurrentPage((prev) =>
-      Math.min(prev + 1, Math.ceil(tableData.length / ITEMS_PER_PAGE) - 1)
+      Math.min(prev + 1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE) - 1)
     );
   };
 
@@ -182,6 +204,11 @@ const TableData: React.FC = () => {
   };
 
   useEffect(() => {
+    // Reseta a página atual ao aplicar um novo filtro
+    setCurrentPage(0);
+  }, [searchTerm, selectedOption]);
+
+  useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -190,7 +217,6 @@ const TableData: React.FC = () => {
 
   //*************************************************************** */
   //FAZER QUERY PARA TRAZER OS DADOS DA DB E RENDERIZAR NA TELA
-  //VERIFICAR A PAGINAÇÃO QUANDO FAZ O FILTRO
 
   return (
     <>
@@ -227,7 +253,7 @@ const TableData: React.FC = () => {
           />
         </div>
         <div className={styles.iconsAction}>
-          <div className={styles.icon}>
+          <div className={styles.icon} onClick={toggleAddProduct}>
             <svg
               width="24"
               height="24"
@@ -346,7 +372,7 @@ const TableData: React.FC = () => {
       <div className={styles.paginacao}>
         <div>
           Página {currentPage + 1} de{" "}
-          {Math.ceil(tableData.length / ITEMS_PER_PAGE)}
+          {Math.ceil(filteredItems.length / ITEMS_PER_PAGE)}
         </div>
         <button
           className={styles.btnArrowLeft}
@@ -369,9 +395,7 @@ const TableData: React.FC = () => {
         </button>
         <button
           onClick={handleNextPage}
-          disabled={
-            currentPage >= Math.ceil(tableData.length / ITEMS_PER_PAGE) - 1
-          }
+          disabled={currentPage >= Math.ceil(filteredItems.length / ITEMS_PER_PAGE) - 1}
           className={styles.btnArrowRight}
         >
           <svg
