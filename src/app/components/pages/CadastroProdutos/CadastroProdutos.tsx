@@ -30,7 +30,7 @@ export default function CadastroProdutos({
   setTitlePage,
 }: CadastroProdutosProps) {
   
-  const handleAddComponente = () => {
+  const handleAddComponente = () :void => {
     setTableDataActive(false);
     setLoading(true);
     setTitlePage("");

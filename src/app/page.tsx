@@ -34,7 +34,7 @@ const Home = () => {
 
   return (
     <>
-      <main>
+      <main className="mainPage">
         <Navbar
           onTabChange={handleTabChange}
           setProdutosData={setProdutosData}

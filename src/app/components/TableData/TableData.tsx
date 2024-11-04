@@ -2,18 +2,34 @@
 
 import React from "react";
 import styles from "./TableData.module.css";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
+import debounce from 'lodash/debounce';
 
-//Interface que lida com o o array de dados dos items da tabela
-interface Item {
-  codigo: string;
-  cdBarra: string;
-  descricao: string;
-  unidade: string;
-  precoVenda: number;
-  grupo: string;
-  subGrupo: string;
+
+interface GroupOrSubgroup {
+  name: string;
+}
+
+interface Products {
+  id: number;
+  description: string;
+  price: number;
+  bar_code: string;
+  ex_ncm: number;
+  reserved_stock: number;
+  gross_weight: number;
+  liquid_weight: number;
+  stock: number;
+  ncmId: string;
+  unityTypeId: string;
+  groupId: number;
+  cestId: string;
+  subGroupId: number;
+  createdAt: string;
+  updatedAt: string;
+  Group: GroupOrSubgroup;
+  SubGroup: GroupOrSubgroup;
 }
 
 //Interface para Lidar com o Array de items filtrados
@@ -21,128 +37,92 @@ interface Item {
 interface ItemFilter {
   item: string;
   svg: string;
+  field: string;
 }
 
 //Interface de Prop do Component
-interface TableDataProps{
-  handleAddProduct: () => void
+interface TableDataProps {
+  handleAddProduct: () => void;
 }
-
-type ItemKeys = keyof Item;
-
-//Todos os dados sem filtro
-//Aqui deve vir todos os dados do back
-
-const tableData: Item[] = [
-  {
-    codigo: "001",
-    cdBarra: "1234567890123",
-    descricao: "Produto 1",
-    unidade: "unidade",
-    precoVenda: 100000.5,
-    grupo: "Grupo A",
-    subGrupo: "Subgrupo A1",
-  },
-  {
-    codigo: "002",
-    cdBarra: "1234567890124",
-    descricao:
-      "A tecnologia avança rapidamente, transformando a maneira como nos comunicamos, trabalhamos e vivemos no dia a dia.",
-    unidade: "unidade",
-    precoVenda: 20.0,
-    grupo: "Grupo A",
-    subGrupo: "Subgrupo A2",
-  },
-  {
-    codigo: "002",
-    cdBarra: "1234567890124",
-    descricao: "Produto 3",
-    unidade: "unidade",
-    precoVenda: 20.0,
-    grupo: "Grupo A",
-    subGrupo: "Subgrupo A2",
-  },
-  {
-    codigo: "002",
-    cdBarra: "1234567890124",
-    descricao: "Produto 4",
-    unidade: "unidade",
-    precoVenda: 20.0,
-    grupo: "Grupo A",
-    subGrupo: "Subgrupo A2",
-  },
-  {
-    codigo: "002",
-    cdBarra: "1234567890124",
-    descricao: "Produto 5",
-    unidade: "unidade",
-    precoVenda: 20.0,
-    grupo: "Grupo A",
-    subGrupo: "Subgrupo A2",
-  },
-  {
-    codigo: "002",
-    cdBarra: "1234567890124",
-    descricao: "Produto 6",
-    unidade: "unidade",
-    precoVenda: 20.0,
-    grupo: "Grupo A",
-    subGrupo: "Subgrupo A2",
-  },
-
-  // Adicione mais itens conforme necessário
-];
 
 //Array de dados filtrado
 const tableFilter: ItemFilter[] = [
   {
     item: "Código",
     svg: "/icons/code-icon.svg",
+    field: "id",
   },
   {
     item: "Cd. Barra",
     svg: "/icons/codebar-icon.svg",
+    field: "bar_code",
   },
   {
     item: "Descrição",
     svg: "/icons/description-icon.svg",
+    field: "description",
   },
   {
     item: "Unidade",
     svg: "/icons/unity-icon.svg",
+    field: "unityTypeId",
   },
   {
     item: "Preço Venda",
     svg: "/icons/price-sell-icon.svg",
+    field: "price",
   },
   {
     item: "Grupo",
     svg: "/icons/group-icon.svg",
+    field: "groupId",
   },
   {
     item: "Sub-Grupo",
     svg: "/icons/sub-group-icon.svg",
+    field: "subGroupId",
   },
 ];
 
 //Quantidade de items na lista por página
-const ITEMS_PER_PAGE = 3;
+const ITEMS_PER_PAGE = 20;
 
-
-
-const TableData: React.FC<TableDataProps> = ({handleAddProduct}) => {
-  const [selecionados, setSelecionados] = useState<boolean[]>(
-    Array(tableData.length).fill(false)
-  );
+const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
+  const [selecionados, setSelecionados] = useState<boolean[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(0);
   const [dropDownSearch, setDropDownSearch] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [products, setProducts] = useState<Products[]>([]);
+  const [initialProducts, setInitialProducts] = useState<Products[]>([])
+  const [initialTotalPages, setInitialTotalPages] = useState<number>(0)
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const res = await fetch(
+        //Esconder url da api futuramente
+        `http://26.56.52.76:4001/getproducts?limit=${ITEMS_PER_PAGE}&page=${
+          currentPage + 1
+        }`
+      );
+      const data = await res.json();
+      console.log(data);
+      setProducts(data.products);
+      setInitialProducts(data.products)
+      setTotalPages(data.totalPages);
+      setInitialTotalPages(data.totalPages)
+    };
+    fetchProducts();
+  }, [currentPage]);
 
+  // Atualiza o estado quando a lista de produtos muda
+  useEffect(() => {
+    setSelecionados(Array(products.length).fill(false));
+  }, [products]);
 
-  const toggleAddProduct = () =>{
-    handleAddProduct()
-  }
+  const toggleAddProduct = () => {
+    handleAddProduct();
+  };
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -152,31 +132,65 @@ const TableData: React.FC<TableDataProps> = ({handleAddProduct}) => {
     setSelecionados(novosSelecionados);
   };
 
-
-
   const handleNextPage = () => {
-    setCurrentPage((prev) =>
-      Math.min(prev + 1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE) - 1)
-    );
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
   };
 
   const handlePreviousPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 0));
   };
 
+    // Função que será chamada para realizar a requisição
+    const filterData = async (searchTerm: string, field: string) => {
+      try {
+        const res = await fetch(
+          //Esconder url da api futuramente
+          `http://26.56.52.76:4001/getproducts?limit=${ITEMS_PER_PAGE}&page=${
+            currentPage + 1
+          }&field=${field}&filter=${searchTerm}`
+        );
+        const data = await res.json();
+        console.log(data);
+        setProducts(data.products)
+        setCurrentPage(0);
+        setTotalPages(data.totalPages);
+    
+      }catch{
+        console.log("Ocorreu algum erro")
+      }
+    };
+  
 
-  // Filtragem
-  const filteredItems = tableData.filter((item) => {
-    if (selectedOption === null) return true; // Retorna todos se nenhum filtro estiver selecionado
-    const filterKey: ItemKeys = Object.keys(item)[selectedOption] as ItemKeys; // Assegura que filterKey é um ItemKeys
-    return item[filterKey]
-      .toString()
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-  });
+    // Debounce da função fetchData
+    const debouncedFetchData = useCallback(
+      debounce((value: string, field: string) => filterData(value, field), 500), // 500ms de atraso
+      []
+    );
+  
+
+  // Atualiza o estado query e chama o debounce da requisição
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+    if (selectedOption == null) {
+      alert("Selecione um Filtro antes de pesquisar");
+      setSearchTerm("");
+      setCurrentPage(0);
+      return;
+    }
+
+    
+    const fieldValue = tableFilter[selectedOption].field
+    console.log(fieldValue)
+    const value = e.target.value;
+    setSearchTerm(value);
+    debouncedFetchData(value, fieldValue);
+  };
+
+
 
   const startIndex = currentPage * ITEMS_PER_PAGE;
-  const currentItems = filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const currentItems = products;
+
   //Dropdown
 
   const handleDropdownToggle = () => {
@@ -192,6 +206,9 @@ const TableData: React.FC<TableDataProps> = ({handleAddProduct}) => {
   //clear selected option dropwdon
   const handleClearOptionClick = () => {
     setSelectedOption(null);
+    setSearchTerm("");
+    setProducts(initialProducts)
+    setTotalPages(initialTotalPages);
   };
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -249,7 +266,7 @@ const TableData: React.FC<TableDataProps> = ({handleAddProduct}) => {
             type="text"
             placeholder="Pesquisar"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleChange}
           />
         </div>
         <div className={styles.iconsAction}>
@@ -351,28 +368,27 @@ const TableData: React.FC<TableDataProps> = ({handleAddProduct}) => {
               <td className={styles.checkbox}>
                 <input
                   type="checkbox"
-                  checked={selecionados[startIndex + index]}
+                  checked={!!selecionados[startIndex + index]} // Garante que seja um booleano
                   onChange={() => handleCheckboxChange(startIndex + index)}
                   id={`checkBox-${startIndex + index}`}
                 />
               </td>
-              <td>{item.codigo}</td>
-              <td>{item.cdBarra}</td>
-              <td className={styles.colunaDescricao}>{item.descricao}</td>
-              <td className={styles.colunaUnidade}>{item.unidade}</td>
+              <td className={styles.colunaCodigo}>{item.id}</td>
+              <td>{item.bar_code}</td>
+              <td className={styles.colunaDescricao}>{item.description}</td>
+              <td className={styles.colunaUnidade}>{item.unityTypeId}</td>
               <td className={styles.colunaPrecoVenda}>
-                {item.precoVenda.toFixed(2)}
+                R$ {item.price.toFixed(2)}
               </td>
-              <td>{item.grupo}</td>
-              <td>{item.subGrupo}</td>
+              <td>{item.Group ? item.Group.name : "N/A"}</td>
+              <td>{item.SubGroup ? item.SubGroup.name : "N/A"}</td>
             </tr>
           ))}
         </tbody>
       </table>
       <div className={styles.paginacao}>
         <div>
-          Página {currentPage + 1} de{" "}
-          {Math.ceil(filteredItems.length / ITEMS_PER_PAGE)}
+          Página {currentPage + 1} de {totalPages== 0 ? 1 : totalPages}
         </div>
         <button
           className={styles.btnArrowLeft}
@@ -395,7 +411,7 @@ const TableData: React.FC<TableDataProps> = ({handleAddProduct}) => {
         </button>
         <button
           onClick={handleNextPage}
-          disabled={currentPage >= Math.ceil(filteredItems.length / ITEMS_PER_PAGE) - 1}
+          disabled={currentPage >= totalPages - 1}
           className={styles.btnArrowRight}
         >
           <svg

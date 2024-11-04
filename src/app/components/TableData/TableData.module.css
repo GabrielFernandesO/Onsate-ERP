@@ -1,7 +1,7 @@
 .tabela {
   width: 100%;
   border-collapse: collapse;
- margin-top: 30px;
+  margin-top: 30px;
 }
 
 .tabela th {
@@ -42,8 +42,14 @@
   width: 140px;
 }
 
-.colunaUnidade {
-  width: 100px;
+.tabela .colunaUnidade {
+  width: 20px;
+  text-align: center;
+}
+
+.tabela .colunaCodigo{
+  width: 50px;
+  text-align: center;
 }
 
 .colunaDescricao {
@@ -123,6 +129,7 @@
   background-color: #D9D9D9;
   padding-right: 10px;
   border: 1px solid black;
+  padding-right: 5px;
 }
 
 .inputSearch svg{
@@ -138,7 +145,7 @@
 .inputSearch input{
   background-color: transparent;
   padding-left: 0.1em;
-  min-width: 350px
+  flex: 1;
 }
 
 .inputSearch input:focus{
@@ -159,7 +166,6 @@
   padding: 0px 8px;
   margin-right: 5px;
   font-weight: 600;
-
 }
 
 .filterDivInput img{
