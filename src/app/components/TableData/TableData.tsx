@@ -236,7 +236,7 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
   //Colocar os popups de input e outros mais que tiverem.
 
   return (
-    <>
+    <main className={styles.main}>
       <div className={styles.controlList}>
         <div className={styles.inputSearch}>
           <svg
@@ -429,7 +429,7 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
           </svg>
         </button>
       </div>
-    </>
+    </main>
   );
 };
 

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Dropdown from "../Dropdown/Dropdown";
 import styles from "./Navbar.module.css";
 import Image from "next/image";
+import { Bounce, toast } from "react-toastify";
 
 //Interface para tipar as props que vem para este componente
 interface OnTabChangeProps {
@@ -19,7 +20,6 @@ export default function Navbar({
   setProdutosData,
   setClientesData,
 }: OnTabChangeProps) {
-
   //States
   const [dropMenu, setDropMenu] = useState<boolean>(false);
   const [activeLink, setActiveLink] = useState<string | null>(null);
@@ -33,12 +33,10 @@ export default function Navbar({
   } | null>(null);
   const [tabs, setTabs] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string | null>(null);
-
-  
+ 
 
   //Função que lida com abertura e fechamento do dropdown
   const handleToggleDropdown = (link: string) => {
-
     //Caso tenha  um link que ja está ativo (Que ja foi clicado)
     //Fecha o dropdown e limpa o link ativo e as props
     if (activeLink === link) {
@@ -46,7 +44,6 @@ export default function Navbar({
       setActiveLink(null);
       setDropdownData(null);
     } else {
-
       //Caso o Link clicado corresponda a algum destes cases abaixo
       //Estas props serão armazenadas na let newDropDownData
       let newDropdownData;
@@ -73,8 +70,16 @@ export default function Navbar({
             icon: "/icons/cadastro-icon.svg",
             title2: "Processos",
             icon2: "/icons/processos-icon.svg",
-            leftOptions: ["Cadastro de Fornecedores", "Cadastro de Grupo / Sub-Grupo", "Cadastro de Unidade"],
-            rightOptions: ["Entrada de Nota", "Inventário", "Ajuste de Suprimentos"],
+            leftOptions: [
+              "Cadastro de Fornecedores",
+              "Cadastro de Grupo / Sub-Grupo",
+              "Cadastro de Unidade",
+            ],
+            rightOptions: [
+              "Entrada de Nota",
+              "Inventário",
+              "Ajuste de Suprimentos",
+            ],
           };
           break;
         case "Financeiro":
@@ -83,7 +88,12 @@ export default function Navbar({
             icon: "/icons/cadastro-icon.svg",
             title2: "Finanças",
             icon2: "/icons/financas-Icon.svg",
-            leftOptions: ["Meio de Pagamento", "Forma de Pagamento", "Centro de Custo", "Plano de Contas"],
+            leftOptions: [
+              "Meio de Pagamento",
+              "Forma de Pagamento",
+              "Centro de Custo",
+              "Plano de Contas",
+            ],
             rightOptions: ["Contas a Pagar", "Contas a Receber", "Caixa"],
           };
           break;
@@ -98,7 +108,11 @@ export default function Navbar({
               "Relatórios de Estoque",
               "Relatório de Fornecedores",
             ],
-            rightOptions: ["Relatório de Transportadores", "Relatório de Vendas", "Relatórios do Financeiro"],
+            rightOptions: [
+              "Relatório de Transportadores",
+              "Relatório de Vendas",
+              "Relatórios do Financeiro",
+            ],
           };
           break;
         default:
@@ -122,11 +136,31 @@ export default function Navbar({
       setTabs((prev) => [...prev, option]);
       setActiveTab(option); // Define a aba ativa ao clicar
       onTabChange(option); // Notifica a page principal sobre a mudança de aba
-    }else if(tabs.includes(option)){
-      alert("aba já aberta.");
-    }
-     else {
-      alert("Limite de abas atingido.");
+    } else if (tabs.includes(option)) {
+      toast.info('Aba já aberta.', {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+        });
+
+    } else {
+      toast.info('Limite de abas atingido.', {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+        });
     }
   };
 
@@ -147,7 +181,10 @@ export default function Navbar({
       onTabChange(null);
     }
 
-    localStorage.setItem('tabs', JSON.stringify(tabs.filter((tab) => tab !== tabToClose)));
+    localStorage.setItem(
+      "tabs",
+      JSON.stringify(tabs.filter((tab) => tab !== tabToClose))
+    );
 
     // Resetar os dados da aba específica
     switch (tabToClose) {
@@ -167,7 +204,8 @@ export default function Navbar({
   //Função que lida com o fechamento do dropdown caso clicado fora de sua área
   const handleClickOutside = (event: MouseEvent) => {
     const target = event.target as HTMLElement; // Obtém o elemento que foi clicado
-    if (!target.closest(`.${styles.lowerNavLinks}`)) { // Verifica se o elemento clicado está dentro do dropdown
+    if (!target.closest(`.${styles.lowerNavLinks}`)) {
+      // Verifica se o elemento clicado está dentro do dropdown
       setDropMenu(false); // Fecha o dropdown
       setActiveLink(null); // Reseta o link ativo (se houver)
       setDropdownData(null); // Limpa os dados do dropdown (se houver)
@@ -179,7 +217,7 @@ export default function Navbar({
     const handleDocumentClick = (event: MouseEvent) => {
       handleClickOutside(event); // Chama a função para lidar com o clique fora
     };
-  
+
     document.addEventListener("click", handleDocumentClick); // Adiciona o listener de clique ao documento
     return () => {
       document.removeEventListener("click", handleDocumentClick); // Remove o listener quando o componente é desmontado
@@ -187,15 +225,12 @@ export default function Navbar({
   }, []);
 
   useEffect(() => {
-    const savedTabs = localStorage.getItem('tabs');
+    const savedTabs = localStorage.getItem("tabs");
     if (savedTabs) {
       setTabs(JSON.parse(savedTabs));
       setActiveTab(JSON.parse(savedTabs)[0] || null);
     }
   }, []);
-
-
-
 
   return (
     <>

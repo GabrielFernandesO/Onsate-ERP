@@ -1,3 +1,7 @@
+.main{
+  height: 100vh;
+}
+
 .tabela {
   width: 100%;
   border-collapse: collapse;

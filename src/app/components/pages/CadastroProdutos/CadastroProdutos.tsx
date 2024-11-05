@@ -39,7 +39,7 @@ export default function CadastroProdutos({
       setLoading(false);
       setTitlePage("Dados Cadastrais");
       setAddProduct(true);
-    }, 1500);
+    }, 500);
   };
 
   return (
