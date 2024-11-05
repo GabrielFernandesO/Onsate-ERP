@@ -233,7 +233,7 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
   }, []);
 
   //*************************************************************** */
-  //FAZER QUERY PARA TRAZER OS DADOS DA DB E RENDERIZAR NA TELA
+  //Colocar os popups de input e outros mais que tiverem.
 
   return (
     <>

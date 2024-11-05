@@ -4,8 +4,8 @@
 .container{
     margin: auto;
     background: white;
-    height: 100%;
     padding: 30px 55px;
+    height: 100vh;
 }
 
 .container h1{
