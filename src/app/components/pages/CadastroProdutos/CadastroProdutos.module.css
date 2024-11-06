@@ -13,3 +13,24 @@
     font-weight: 600;
 }
 
+.titleButtons{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.controlSheetButtons{
+    display: flex;
+    align-items: center;
+}
+
+.controlSheetButtons img{
+    cursor: pointer;
+    margin-left: 25px;
+}
+
+.controlSheetButtons img:hover{
+    background-color: #1D94C9;
+}
+
+

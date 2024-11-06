@@ -4,6 +4,8 @@ import TableData from "../../TableData/TableData";
 import styles from "./CadastroProdutos.module.css";
 import Loading from "../../Loading/Loading";
 import CadastroProdutosSheet from "../../Sheets/CadastroProdutos/CadastroProdutosSheet";
+import Image from "next/image";
+import { useState } from "react";
 
 interface CadastroProdutosProps {
   data: string;
@@ -29,9 +31,14 @@ export default function CadastroProdutos({
   titlePage,
   setTitlePage,
 }: CadastroProdutosProps) {
-  
-  const handleAddComponente = () :void => {
+  // Estados para controlar o filho (controle do formulário)
+  const [clearFormFlag, setClearFormFlag] = useState(false);
+  const [addProductFlag, setAddProductFlag] = useState(false);
+
+  //Function que limpa a página e renderiza o componente de adicionar
+  const handleAddComponente = (): void => {
     setTableDataActive(false);
+
     setLoading(true);
     setTitlePage("");
 
@@ -42,18 +49,74 @@ export default function CadastroProdutos({
     }, 500);
   };
 
+  //Function para retornar ao componente de tabela
+  //**** TODA VEZ Q VOLTAR SERÁ UMA NOVA REQ, VER COMO PROCEDER SE DEIXA OU MUDA, como é product novo acredito que deixar como está msm
+  const handleBackComponent = (): void => {
+    setTitlePage("Cadastro de Produtos");
+    setAddProduct(false);
+    setTableDataActive(true);
+  };
+
+  // Função para limpar o formulário
+  const handleClearForm = () => {
+    setClearFormFlag(true); // Atualiza o estado para sinalizar ao filho que ele deve limpar o formulário
+  };
+
+  // Função para adicionar o produto
+  const handleAddProduct = () => {
+    setAddProductFlag(true); // Atualiza o estado para sinalizar ao filho que ele deve adicionar o produto
+  };
+
   return (
     <main className={styles.main}>
       <div className={styles.container}>
-        <h1>{titlePage}</h1>
+        {titlePage == "Cadastro de Produtos" && <h1>Cadastro de Produtos</h1>}
+        {titlePage !== "Cadastro de Produtos" && (
+          <div className={styles.titleButtons}>
+            <h1>{titlePage}</h1>
+            {!loading && (
+              <div className={styles.controlSheetButtons}>
+                <Image
+                  src={"/icons/eraser-icon.svg"}
+                  width={36}
+                  height={36}
+                  alt="eraser-icon"
+                  onClick={handleClearForm}
+                />
+                <Image
+                  src={"/icons/disket-save-icon.svg"}
+                  width={36}
+                  height={36}
+                  alt="disket-icon"
+                  onClick={handleAddProduct}
+                />
+                <Image
+                  src={"/icons/arrow-back-icon.svg"}
+                  width={36}
+                  height={36}
+                  alt="arrow-back-icon"
+                  onClick={handleBackComponent}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
         {tableDataActive && (
           <TableData handleAddProduct={handleAddComponente} />
         )}
-        {loading && (
-          <Loading />
-        )}
+        {loading && <Loading />}
         {addProduct && (
-          <CadastroProdutosSheet />
+               <CadastroProdutosSheet
+               clearFormFlag={clearFormFlag}
+               addProductFlag={addProductFlag}
+               resetFlags={() => {
+                 setClearFormFlag(false);
+                 setAddProductFlag(false);
+               }} // Função para resetar os flags no filho
+               handleAddProduct={handleAddProduct} // Função de adicionar no pai
+               handleClearForm={handleClearForm} // Função de limpar no pai
+             />
         )}
       </div>
     </main>

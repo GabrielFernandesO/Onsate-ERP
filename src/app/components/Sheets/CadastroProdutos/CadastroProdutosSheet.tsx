@@ -3,8 +3,16 @@
 import React from "react";
 import styles from "./CadastroProdutosSheet.module.css";
 import { atom, useAtom } from "jotai";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+
+interface CadastroProdutosSheetProps {
+  clearFormFlag: boolean;
+  addProductFlag: boolean;
+  resetFlags: () => void; // Função para resetar os flags
+  handleAddProduct: () => void;  // Função para adicionar o produto
+  handleClearForm: () => void;   // Função para limpar o formulário
+}
 
 // Definindo átomos para cada campo de input
 //Irão inicializar os valores nos inputs
@@ -22,7 +30,13 @@ export const stockAtom = atom<string | null>(null);
 export const grossWeightAtom = atom<string | null>(null);
 export const liquidWeightAtom = atom<string | null>(null);
 
-const CadastroProdutosSheet: React.FC = () => {
+const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
+  clearFormFlag,
+  addProductFlag,
+  resetFlags,
+  handleAddProduct,
+  handleClearForm,
+}) => {
   // Usando os átomos com useAtom para obter e definir o estado
   const [description, setDescription] = useAtom(descriptionAtom);
   const [unityType, setUnityType] = useAtom(unityTypeAtom);
@@ -58,8 +72,7 @@ const CadastroProdutosSheet: React.FC = () => {
   };
 
   //Function para enviar os dados para o backend
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
 
     let error: string | null = null;
 
@@ -132,6 +145,25 @@ const CadastroProdutosSheet: React.FC = () => {
       setErrorMessage(null); // Limpa a mensagem de erro ao selecionar
     };
   };
+
+
+
+ // Funções para tratar as flags de controle
+ useEffect(() => {
+  if (clearFormFlag) {
+    resetForm();
+    handleClearForm()
+    resetFlags(); // Reseta os flags no pai
+  }
+}, [clearFormFlag, resetFlags]);
+
+useEffect(() => {
+  if (addProductFlag) {
+    handleAddProduct();
+    handleSubmit(); // Passando um objeto vazio como evento
+    resetFlags(); // Reseta os flags no pai
+  }
+}, [addProductFlag, resetFlags, handleAddProduct]);
 
   return (
     <main className={styles.main}>
@@ -362,10 +394,6 @@ const CadastroProdutosSheet: React.FC = () => {
             </div>
             <div className={styles.adjustSpace}></div>
           </div>
-
-          <button type="submit" className={styles.submitButton}>
-            Enviar
-          </button>
         </form>
       </div>
     </main>
