@@ -5,7 +5,23 @@ import { useState, useEffect } from "react";
 import Dropdown from "../Dropdown/Dropdown";
 import styles from "./Navbar.module.css";
 import Image from "next/image";
+import { useAtom } from "jotai";
 import { Bounce, toast } from "react-toastify";
+import {
+  descriptionAtom,
+  unityTypeAtom,
+  barCodeAtom,
+  ncmAtom,
+  exNcmAtom,
+  cestIdAtom,
+  priceAtom,
+  groupIdAtom,
+  subGroupIdAtom,
+  reservedStockAtom,
+  stockAtom,
+  grossWeightAtom,
+  liquidWeightAtom,
+} from "../Sheets/CadastroProdutos/CadastroProdutosSheet";
 
 //Interface para tipar as props que vem para este componente
 interface OnTabChangeProps {
@@ -17,10 +33,10 @@ interface OnTabChangeProps {
 //Component Navbar
 export default function Navbar({
   onTabChange,
-  setProdutosData,
   setClientesData,
 }: OnTabChangeProps) {
-  //States
+
+  //States navbar
   const [dropMenu, setDropMenu] = useState<boolean>(false);
   const [activeLink, setActiveLink] = useState<string | null>(null);
   const [dropdownData, setDropdownData] = useState<{
@@ -33,7 +49,38 @@ export default function Navbar({
   } | null>(null);
   const [tabs, setTabs] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string | null>(null);
- 
+
+  //States para Resetar os dados da folha cadastro de produtos
+  const [, setDescription] = useAtom(descriptionAtom);
+  const [, setUnityType] = useAtom(unityTypeAtom);
+  const [, setBarCode] = useAtom(barCodeAtom);
+  const [, setNcm] = useAtom(ncmAtom);
+  const [, setExNcm] = useAtom(exNcmAtom);
+  const [, setCestId] = useAtom(cestIdAtom);
+  const [, setPrice] = useAtom(priceAtom);
+  const [, setGroupId] = useAtom(groupIdAtom);
+  const [, setSubGroupId] = useAtom(subGroupIdAtom);
+  const [, setReservedStock] = useAtom(reservedStockAtom);
+  const [, setStock] = useAtom(stockAtom);
+  const [, setGrossWeight] = useAtom(grossWeightAtom);
+  const [, setLiquidWeight] = useAtom(liquidWeightAtom);
+
+  //Função de reset dos dados da folha de cadastro de produtos
+  const resetForm = () => {
+    setDescription("");
+    setUnityType("");
+    setBarCode("");
+    setNcm("");
+    setExNcm("");
+    setCestId("");
+    setPrice("");
+    setGroupId(null);
+    setSubGroupId(null);
+    setReservedStock("");
+    setStock("");
+    setGrossWeight("");
+    setLiquidWeight("");
+  };
 
   //Função que lida com abertura e fechamento do dropdown
   const handleToggleDropdown = (link: string) => {
@@ -137,7 +184,7 @@ export default function Navbar({
       setActiveTab(option); // Define a aba ativa ao clicar
       onTabChange(option); // Notifica a page principal sobre a mudança de aba
     } else if (tabs.includes(option)) {
-      toast.info('Aba já aberta.', {
+      toast.info("Aba já aberta.", {
         position: "top-center",
         autoClose: 2000,
         hideProgressBar: false,
@@ -147,10 +194,9 @@ export default function Navbar({
         progress: undefined,
         theme: "light",
         transition: Bounce,
-        });
-
+      });
     } else {
-      toast.info('Limite de abas atingido.', {
+      toast.info("Limite de abas atingido.", {
         position: "top-center",
         autoClose: 2000,
         hideProgressBar: false,
@@ -160,7 +206,7 @@ export default function Navbar({
         progress: undefined,
         theme: "light",
         transition: Bounce,
-        });
+      });
     }
   };
 
@@ -190,7 +236,8 @@ export default function Navbar({
     switch (tabToClose) {
       case "Cadastro de Produtos":
         // Resetar os dados do Cadastro de Produtos
-        setProdutosData("");
+        resetForm();
+        
         break;
       case "Cadastro de Clientes":
         // Resetar os dados do Cadastro de Clientes
@@ -323,7 +370,7 @@ export default function Navbar({
           </div>
         </div>
       </nav>
-      {/* Componente dropdow chamado e suas props enviadas */}
+      {/* Componente dropdow chamaNdo e suas props enviadas */}
       {dropMenu && dropdownData && (
         <Dropdown
           title={dropdownData.title}

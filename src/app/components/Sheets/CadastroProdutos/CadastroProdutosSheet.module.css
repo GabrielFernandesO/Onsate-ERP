@@ -14,6 +14,8 @@
 
 .firstLineInput {
   margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
 }
 
 .secondLineInputs {
@@ -80,6 +82,7 @@
 
 .divInputIcon {
   display: flex;
+  align-items: center;
 }
 
 .divInputIcon img {
@@ -91,8 +94,8 @@
 }
 
 .unityInput {
-  min-width: 70px;
-  max-width: 70px;
+  min-width: 110px;
+  max-width: 110px;
 }
 
 .barCodeInput {
@@ -100,17 +103,18 @@
 }
 
 .ncmInput {
-  max-width: 160px;
-  min-width: 160px;
+  max-width: 180px;
+  min-width: 180px;
 }
 
-.ex_ncm {
-  max-width: 120px;
+.ex_ncmInput {
+  max-width: 100px;
+  min-width: 100px
 }
 
-.cestId {
-  max-width: 160px;
-  min-width: 160px;
+.cestIdInput {
+  max-width: 180px;
+  min-width: 180px;
 }
 
 .priceInput {

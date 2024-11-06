@@ -5,7 +5,9 @@ import styles from "./TableData.module.css";
 import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import debounce from 'lodash/debounce';
+import { toast } from "react-toastify";
 
+//Interfaces
 
 interface GroupOrSubgroup {
   name: string;
@@ -45,7 +47,7 @@ interface TableDataProps {
   handleAddProduct: () => void;
 }
 
-//Array de dados filtrado
+//Array de items utilizados para filtrar no input de pesquisa
 const tableFilter: ItemFilter[] = [
   {
     item: "Código",
@@ -88,6 +90,7 @@ const tableFilter: ItemFilter[] = [
 const ITEMS_PER_PAGE = 20;
 
 const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
+  //States
   const [selecionados, setSelecionados] = useState<boolean[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
@@ -97,6 +100,8 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
   const [products, setProducts] = useState<Products[]>([]);
   const [initialProducts, setInitialProducts] = useState<Products[]>([])
   const [initialTotalPages, setInitialTotalPages] = useState<number>(0)
+
+  //Req de busca de dados da tabela ao criar o componente
   useEffect(() => {
     const fetchProducts = async () => {
       const res = await fetch(
@@ -120,18 +125,24 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
     setSelecionados(Array(products.length).fill(false));
   }, [products]);
 
+  //Função enviada via prop para adicionar um produto
+  //Os icones estão na page CadastroProdutos, mas o clique vem daqui e envia para la
   const toggleAddProduct = () => {
     handleAddProduct();
   };
 
+  //Const useRef para verificar qual elemento o usuário está clicando
+  //PAra lidar com o dropdown do filtro da barra de pesquisa
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  //Function que lita com as caixas que selecionam os produtos
   const handleCheckboxChange = (index: number) => {
     const novosSelecionados = [...selecionados];
     novosSelecionados[index] = !novosSelecionados[index];
     setSelecionados(novosSelecionados);
   };
 
+  //Functions de Paginação
   const handleNextPage = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
   };
@@ -140,7 +151,7 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
     setCurrentPage((prev) => Math.max(prev - 1, 0));
   };
 
-    // Função que será chamada para realizar a requisição
+    // Função que será chamada para realizar a requisição com base no filtro
     const filterData = async (searchTerm: string, field: string) => {
       try {
         const res = await fetch(
@@ -161,24 +172,27 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
     };
   
 
-    // Debounce da função fetchData
+    // Debounce da função fetchData]
+    //Só chama a req de filtro depois de 500ms ou seja
+    //Vai esperar 500ms para ver se outra tecla não vai ser pressionada
+    //Evitando várias reqs ao db
     const debouncedFetchData = useCallback(
       debounce((value: string, field: string) => filterData(value, field), 500), // 500ms de atraso
       []
     );
   
 
-  // Atualiza o estado query e chama o debounce da requisição
+  // Function onchange do input de pesquisar, caso um filtro não esteja selecionado
+  //Solicita a escolha de um e reseta os estados abaixo
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
     if (selectedOption == null) {
-      alert("Selecione um Filtro antes de pesquisar");
+      toast.info("Selecione um Filtro antes de pesquisar");
       setSearchTerm("");
       setCurrentPage(0);
       return;
     }
 
-    
     const fieldValue = tableFilter[selectedOption].field
     console.log(fieldValue)
     const value = e.target.value;
@@ -187,12 +201,13 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
   };
 
 
-
+  //Variavel para realizar o zebramento da lista
+  //Com base no tamanho do array
   const startIndex = currentPage * ITEMS_PER_PAGE;
+  //Varaivel que recebe todo o array de produytos
   const currentItems = products;
 
-  //Dropdown
-
+  //Dropdown da barra de pesquisa
   const handleDropdownToggle = () => {
     setDropDownSearch((prev) => !prev);
   };
@@ -211,6 +226,7 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
     setTotalPages(initialTotalPages);
   };
 
+  //Verifica se o clique foi fora do dropdown para fechar
   const handleClickOutside = (event: MouseEvent) => {
     if (
       dropdownRef.current &&
@@ -232,8 +248,6 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
     };
   }, []);
 
-  //*************************************************************** */
-  //Colocar os popups de input e outros mais que tiverem.
 
   return (
     <main className={styles.main}>
