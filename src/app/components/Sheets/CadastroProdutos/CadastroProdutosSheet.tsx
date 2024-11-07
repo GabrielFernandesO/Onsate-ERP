@@ -5,6 +5,7 @@ import styles from "./CadastroProdutosSheet.module.css";
 import { atom, useAtom } from "jotai";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { toast } from "react-toastify";
 
 interface CadastroProdutosSheetProps {
   clearFormFlag: boolean;
@@ -72,7 +73,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   };
 
   //Function para enviar os dados para o backend
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
 
     let error: string | null = null;
 
@@ -97,7 +98,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     setErrorMessage(null);
 
     // Dados do formulário
-    const data = {
+    const dataForm = {
       description,
       unity_type: unityType,
       bar_code: parseInt(barCode || ""),
@@ -114,7 +115,32 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     };
 
     // Fazer REQ da API
-    console.log("Formulário enviado com sucesso!", data);
+    console.log("Formulário enviado com sucesso!", dataForm);
+
+    try {
+      const response = await fetch('http://26.56.52.76:4001/postproducts', {
+        method: 'POST',  // Usando POST para enviar dados
+        headers: {
+          'Content-Type': 'application/json',  // Especifica que os dados estão em formato JSON
+          'Authorization': 'Bearer seu_token_aqui'  // Se precisar de autenticação
+        },
+        body: JSON.stringify(dataForm)  // Converte o objeto para JSON
+      });
+  
+      // Verifica se a resposta foi bem-sucedida
+      if (!response.ok) {
+        toast.error("Ocorreu um erro de requisição, tente novamente!");
+      }
+  
+      // Converte a resposta para JSON
+      const data = await response.json();
+      console.log('Produto postado com sucesso:', data);
+      toast.success("Produto adicionado com sucesso!");
+  
+    } catch (error) {
+      console.log(error)
+      toast.error('Erro ao postar o produto');
+    }
 
     // Resetar o formulário após o envio
     resetForm();
