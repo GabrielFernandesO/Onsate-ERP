@@ -17,6 +17,7 @@ const Home = () => {
   //Assim ele não reseta a pagina
   const [tableDataActive, setTableDataActive] = useState<boolean>(true);
   const [addProduct, setAddProduct] = useState<boolean>(false);
+  const [addEdit, setAddEdit] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [titlePage, setTitlePage] = useState<string>("Cadastro de Produtos");
 
@@ -26,6 +27,7 @@ const Home = () => {
       setTableDataActive(true);
       setAddProduct(false);
       setLoading(false);
+      setAddEdit(false)
       setTitlePage("Cadastro de Produtos");
     }
     setActiveTab(tab);
@@ -54,6 +56,8 @@ const Home = () => {
               setLoading={setLoading}
               titlePage={titlePage}
               setTitlePage={setTitlePage}
+              addEdit={addEdit}
+              setAddEdit={setAddEdit}
             />
           )}
           {activeTab === "Cadastro de Clientes" && (

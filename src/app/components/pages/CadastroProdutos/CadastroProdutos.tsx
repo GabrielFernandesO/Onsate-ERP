@@ -6,6 +6,7 @@ import Loading from "../../Loading/Loading";
 import CadastroProdutosSheet from "../../Sheets/CadastroProdutos/CadastroProdutosSheet";
 import Image from "next/image";
 import { useState } from "react";
+import EditarCadastroProdutosSheet from "../../Sheets/EditarCadastroProdutos/EditarCadastroProdutosSheet";
 
 interface CadastroProdutosProps {
   data: string;
@@ -13,6 +14,8 @@ interface CadastroProdutosProps {
   activeTab: string;
   tableDataActive: boolean;
   setTableDataActive: React.Dispatch<React.SetStateAction<boolean>>;
+  addEdit: boolean;
+  setAddEdit: React.Dispatch<React.SetStateAction<boolean>>;
   addProduct: boolean;
   setAddProduct: React.Dispatch<React.SetStateAction<boolean>>;
   loading: boolean;
@@ -24,6 +27,8 @@ interface CadastroProdutosProps {
 export default function CadastroProdutos({
   tableDataActive,
   setTableDataActive,
+  addEdit,
+  setAddEdit,
   addProduct,
   setAddProduct,
   loading,
@@ -49,11 +54,26 @@ export default function CadastroProdutos({
     }, 500);
   };
 
+    //Function que limpa a página e renderiza o componente de editar
+    const handleEditComponent = (): void => {
+      setTableDataActive(false);
+  
+      setLoading(true);
+      setTitlePage("");
+  
+      setTimeout(() => {
+        setLoading(false);
+        setTitlePage("Editar Produto");
+        setAddEdit(true);
+      }, 500);
+    };
+
   //Function para retornar ao componente de tabela
   //**** TODA VEZ Q VOLTAR SERÁ UMA NOVA REQ, VER COMO PROCEDER SE DEIXA OU MUDA, como é product novo acredito que deixar como está msm
   const handleBackComponent = (): void => {
     setTitlePage("Cadastro de Produtos");
     setAddProduct(false);
+    setAddEdit(false)
     setTableDataActive(true);
   };
 
@@ -103,7 +123,7 @@ export default function CadastroProdutos({
         )}
 
         {tableDataActive && (
-          <TableData handleAddProduct={handleAddComponente} />
+          <TableData handleAddProduct={handleAddComponente} handleEditProduct={handleEditComponent} />
         )}
         {loading && <Loading />}
         {addProduct && (
@@ -117,6 +137,18 @@ export default function CadastroProdutos({
                handleAddProduct={handleAddProduct} // Função de adicionar no pai
                handleClearForm={handleClearForm} // Função de limpar no pai
              />
+        )}
+        {addEdit && (
+          <EditarCadastroProdutosSheet 
+          clearFormFlag={clearFormFlag}
+          addProductFlag={addProductFlag}
+          resetFlags={() => {
+            setClearFormFlag(false);
+            setAddProductFlag(false);
+          }} // Função para resetar os flags no filho
+          handleAddProduct={handleAddProduct} // Função de adicionar no pai
+          handleClearForm={handleClearForm} // Função de limpar no pai
+          />
         )}
       </div>
     </main>

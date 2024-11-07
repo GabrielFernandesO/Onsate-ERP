@@ -45,6 +45,7 @@ interface ItemFilter {
 //Interface de Prop do Component
 interface TableDataProps {
   handleAddProduct: () => void;
+  handleEditProduct: () => void;
 }
 
 //Array de items utilizados para filtrar no input de pesquisa
@@ -89,7 +90,7 @@ const tableFilter: ItemFilter[] = [
 //Quantidade de items na lista por página
 const ITEMS_PER_PAGE = 20;
 
-const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
+const TableData: React.FC<TableDataProps> = ({ handleAddProduct,  handleEditProduct}) => {
   //States
   const [selecionados, setSelecionados] = useState<boolean[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(0);
@@ -130,6 +131,11 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
   const toggleAddProduct = () => {
     handleAddProduct();
   };
+
+  const toggleAddEditProduct = () => {
+    handleEditProduct();
+  };
+
 
   //Const useRef para verificar qual elemento o usuário está clicando
   //PAra lidar com o dropdown do filtro da barra de pesquisa
@@ -299,7 +305,7 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct }) => {
               />
             </svg>
           </div>
-          <div className={styles.icon}>
+          <div className={styles.icon} onClick={toggleAddEditProduct}>
             <svg
               width="24"
               height="24"
