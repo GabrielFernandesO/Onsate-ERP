@@ -11,8 +11,8 @@ interface CadastroProdutosSheetProps {
   clearFormFlag: boolean;
   addProductFlag: boolean;
   resetFlags: () => void; // Função para resetar os flags
-  handleAddProduct: () => void;  // Função para adicionar o produto
-  handleClearForm: () => void;   // Função para limpar o formulário
+  handleAddProduct: () => void; // Função para adicionar o produto
+  handleClearForm: () => void; // Função para limpar o formulário
 }
 
 // Definindo átomos para cada campo de input
@@ -59,22 +59,21 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const resetForm = () => {
     setDescription("");
     setUnityType("");
-    setBarCode("");
+    setBarCode(null);
     setNcm("");
-    setExNcm("");
+    setExNcm(null);
     setCestId("");
-    setPrice("");
+    setPrice(null);
     setGroupId(null);
     setSubGroupId(null);
-    setReservedStock("");
-    setStock("");
-    setGrossWeight("");
-    setLiquidWeight("");
+    setReservedStock(null);
+    setStock(null);
+    setGrossWeight(null);
+    setLiquidWeight(null);
   };
 
   //Function para enviar os dados para o backend
   const handleSubmit = async () => {
-
     let error: string | null = null;
 
     // Verificando se os campos estão vazios
@@ -99,46 +98,51 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
 
     // Dados do formulário
     const dataForm = {
-      description,
+      description: description,
       unity_type: unityType,
-      bar_code: parseInt(barCode || ""),
+      ...(barCode && { bar_code: parseInt(barCode) }),
       ncm: ncm,
-      ex_ncm: parseInt(exNcm || ""),
-      cestId: cestId,
-      price: parseFloat(price || ""),
+      ...(exNcm && { ex_ncm: parseInt(exNcm) }),
+      ...(cestId && { cestId: parseInt(cestId) }),
+      ...(price && { price: parseInt(price) }),
       groupId,
       subGroupId,
-      reserved_stock: parseInt(reservedStock || ""),
-      stock: parseInt(stock || ""),
-      gross_weight: parseFloat(grossWeight || ""),
-      liquid_weight: parseFloat(liquidWeight || ""),
+      ...(reservedStock && { reserved_stock: parseInt(reservedStock) }),
+      ...(stock && { stock: parseInt(stock) }),
+      ...(grossWeight && { gross_weight: parseInt(grossWeight) }),
+      ...(liquidWeight && { liquid_weight: parseInt(liquidWeight) }),
     };
 
     // Fazer REQ da API
     console.log("Formulário enviado com sucesso!", dataForm);
 
     try {
-      const response = await fetch('http://26.56.52.76:8000/postproducts', {
-        method: 'POST',  // Usando POST para enviar dados
+      const response = await fetch("http://26.56.52.76:8000/postproducts", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',  // Especifica que os dados estão em formato JSON // Se precisar de autenticação
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(dataForm)  // Converte o objeto para JSON
+        body: JSON.stringify(dataForm), // Converte o objeto para JSON
       });
-  
+
       // Verifica se a resposta foi bem-sucedida
       if (!response.ok) {
         toast.error("Ocorreu um erro de requisição, tente novamente!");
+        return
+      }
+
+      if(response.status === 201){
+         
+        //Api não retorna json, então não fazer nada com response
+        
+        console.log("Produto postado com sucesso:");
+        toast.success("Produto adicionado com sucesso!");
       }
   
-      // Converte a resposta para JSON
-      const data = await response.json();
-      console.log('Produto postado com sucesso:', data);
-      toast.success("Produto adicionado com sucesso!");
-  
+
     } catch (error) {
-      console.log(error)
-      toast.error('Erro ao postar o produto');
+      console.log(error);
+      toast.error("Erro ao postar o produto");
     }
 
     // Resetar o formulário após o envio
@@ -171,24 +175,22 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     };
   };
 
+  // Funções para tratar as flags de controle
+  useEffect(() => {
+    if (clearFormFlag) {
+      resetForm();
+      handleClearForm();
+      resetFlags(); // Reseta os flags no pai
+    }
+  }, [clearFormFlag, resetFlags]);
 
-
- // Funções para tratar as flags de controle
- useEffect(() => {
-  if (clearFormFlag) {
-    resetForm();
-    handleClearForm()
-    resetFlags(); // Reseta os flags no pai
-  }
-}, [clearFormFlag, resetFlags]);
-
-useEffect(() => {
-  if (addProductFlag) {
-    handleAddProduct();
-    handleSubmit(); // Passando um objeto vazio como evento
-    resetFlags(); // Reseta os flags no pai
-  }
-}, [addProductFlag, resetFlags, handleAddProduct]);
+  useEffect(() => {
+    if (addProductFlag) {
+      handleAddProduct();
+      handleSubmit(); // Passando um objeto vazio como evento
+      resetFlags(); // Reseta os flags no pai
+    }
+  }, [addProductFlag, resetFlags, handleAddProduct]);
 
   return (
     <main className={styles.main}>
@@ -241,7 +243,7 @@ useEffect(() => {
               <label>Código de barras</label>
               <input
                 type="text"
-                value={barCode || ""}
+                value={barCode || 0}
                 onChange={(e) => setBarCode(e.target.value)}
                 maxLength={13}
                 placeholder="ex: 1698189354175"
@@ -261,9 +263,9 @@ useEffect(() => {
                   className={styles.ncmInput}
                 >
                   <option value="">Selecione</option>
-                  <option value="12345678">12345678</option>
-                  <option value="12345665">12345665</option>
-                  <option value="12343278">12343278</option>
+                  <option value="01">01</option>
+                  <option value="01.01">01.01</option>
+                  <option value="0101.2">0101.2</option>
                 </select>
                 <Image
                   src={"icons/search-input-icon.svg"}

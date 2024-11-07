@@ -107,7 +107,7 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct,  handleEditProd
     const fetchProducts = async () => {
       const res = await fetch(
         //Esconder url da api futuramente
-        `http://26.56.52.76:4001/getproducts?limit=${ITEMS_PER_PAGE}&page=${
+        `http://26.56.52.76:8000/getproducts?limit=${ITEMS_PER_PAGE}&page=${
           currentPage + 1
         }`
       );
@@ -162,7 +162,7 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct,  handleEditProd
       try {
         const res = await fetch(
           //Esconder url da api futuramente
-          `http://26.56.52.76:4001/getproducts?limit=${ITEMS_PER_PAGE}&page=${
+          `http://26.56.52.76:8000/getproducts?limit=${ITEMS_PER_PAGE}&page=${
             currentPage + 1
           }&field=${field}&filter=${searchTerm}`
         );
