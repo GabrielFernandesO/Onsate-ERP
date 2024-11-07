@@ -118,11 +118,10 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     console.log("Formulário enviado com sucesso!", dataForm);
 
     try {
-      const response = await fetch('http://26.56.52.76:4001/postproducts', {
+      const response = await fetch('http://26.56.52.76:8000/postproducts', {
         method: 'POST',  // Usando POST para enviar dados
         headers: {
-          'Content-Type': 'application/json',  // Especifica que os dados estão em formato JSON
-          'Authorization': 'Bearer seu_token_aqui'  // Se precisar de autenticação
+          'Content-Type': 'application/json',  // Especifica que os dados estão em formato JSON // Se precisar de autenticação
         },
         body: JSON.stringify(dataForm)  // Converte o objeto para JSON
       });
@@ -387,23 +386,12 @@ useEffect(() => {
             </div>
 
             <div className={styles.inputWrapContainer}>
-              <label>Estoque</label>
-              <input
-                type="text"
-                value={stock || ""}
-                onChange={(e) => setStock(e.target.value)}
-                placeholder="ex: 20"
-                onInput={handleInputNumber}
-              />
-            </div>
-
-            <div className={styles.inputWrapContainer}>
               <label>Peso Bruto</label>
               <input
                 type="text"
                 value={grossWeight || ""}
                 onChange={(e) => setGrossWeight(e.target.value)}
-                placeholder="ex: 30"
+                placeholder="ex: 100"
                 onInput={handleInputNumber}
               />
             </div>
@@ -414,7 +402,7 @@ useEffect(() => {
                 type="text"
                 value={liquidWeight || ""}
                 onChange={(e) => setLiquidWeight(e.target.value)}
-                placeholder="ex: 25"
+                placeholder="ex: 80"
                 onInput={handleInputNumber}
               />
             </div>
