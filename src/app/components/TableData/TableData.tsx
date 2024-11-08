@@ -4,7 +4,7 @@ import React from "react";
 import styles from "./TableData.module.css";
 import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
-import debounce from 'lodash/debounce';
+import debounce from "lodash/debounce";
 import { toast } from "react-toastify";
 
 //Interfaces
@@ -90,17 +90,20 @@ const tableFilter: ItemFilter[] = [
 //Quantidade de items na lista por página
 const ITEMS_PER_PAGE = 20;
 
-const TableData: React.FC<TableDataProps> = ({ handleAddProduct,  handleEditProduct}) => {
+const TableData: React.FC<TableDataProps> = ({
+  handleAddProduct,
+  handleEditProduct,
+}) => {
   //States
-  const [selecionados, setSelecionados] = useState<boolean[]>([]);
+  const [selecteds, setSelecteds] = useState<boolean[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [dropDownSearch, setDropDownSearch] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [products, setProducts] = useState<Products[]>([]);
-  const [initialProducts, setInitialProducts] = useState<Products[]>([])
-  const [initialTotalPages, setInitialTotalPages] = useState<number>(0)
+  const [initialProducts, setInitialProducts] = useState<Products[]>([]);
+  const [initialTotalPages, setInitialTotalPages] = useState<number>(0);
 
   //Req de busca de dados da tabela ao criar o componente
   useEffect(() => {
@@ -114,16 +117,16 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct,  handleEditProd
       const data = await res.json();
       console.log(data);
       setProducts(data.products);
-      setInitialProducts(data.products)
+      setInitialProducts(data.products);
       setTotalPages(data.totalPages);
-      setInitialTotalPages(data.totalPages)
+      setInitialTotalPages(data.totalPages);
     };
     fetchProducts();
   }, [currentPage]);
 
   // Atualiza o estado quando a lista de produtos muda
   useEffect(() => {
-    setSelecionados(Array(products.length).fill(false));
+    setSelecteds(Array(products.length).fill(false));
   }, [products]);
 
   //Função enviada via prop para adicionar um produto
@@ -132,10 +135,70 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct,  handleEditProd
     handleAddProduct();
   };
 
+  //Functio para enviar ao elemento pai o clique de renderizar a página de edit de produtos
   const toggleAddEditProduct = () => {
     handleEditProduct();
   };
 
+  //Function para deletar
+  const deleteProducts = async () => {
+    // Cria um array de IDs dos produtos selecionados
+    const selectedProductIds = products
+      .filter((_, index) => selecteds[index]) // Filtra os produtos onde a seleção é true
+      .map((product) => product.id); // Mapeia para pegar os IDs dos produtos selecionados
+
+    console.log(selectedProductIds);
+
+    // Se a lista de IDs estiver vazia, não faz nada
+    if (selectedProductIds.length === 0) {
+      toast.info("Nenhum produto selecionado para deletar.");
+      return;
+    }
+
+    //Req Delete
+    try {
+      const res = await fetch("http://26.56.52.76:8000//deleteproducts", {
+        method: "DELETE", // Usando POST para enviar os dados
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: selectedProductIds }), // Passando os IDs no corpo da requisição
+      });
+
+      if (!res.ok) {
+        toast.error("Os produtos não foram deletados, tente novamente.");
+        return;
+      }
+
+      if (res.status == 204) {
+        toast.success("Produtos deletados com sucesso.");
+        //Chama uma nova req get no DB
+        fetchProductsDeleted();
+        setSelecteds(Array(products.length).fill(false)); // Reseta a seleção
+      } else {
+        toast.error("Erro ao deletar os produtos.");
+      }
+    } catch (error) {
+      console.error("Erro na requisição de delete:", error);
+      toast.error("Ocorreu um erro ao tentar deletar os produtos.");
+    }
+  };
+
+  //Faz uma nova req após deletar os produtos
+  const fetchProductsDeleted = async () => {
+    const res = await fetch(
+      //Esconder url da api futuramente
+      `http://26.56.52.76:8000/getproducts?limit=${ITEMS_PER_PAGE}&page=${
+        currentPage + 1
+      }`
+    );
+    const data = await res.json();
+    console.log(data);
+    setProducts(data.products);
+    setInitialProducts(data.products);
+    setTotalPages(data.totalPages);
+    setInitialTotalPages(data.totalPages);
+  };
 
   //Const useRef para verificar qual elemento o usuário está clicando
   //PAra lidar com o dropdown do filtro da barra de pesquisa
@@ -143,9 +206,9 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct,  handleEditProd
 
   //Function que lita com as caixas que selecionam os produtos
   const handleCheckboxChange = (index: number) => {
-    const novosSelecionados = [...selecionados];
-    novosSelecionados[index] = !novosSelecionados[index];
-    setSelecionados(novosSelecionados);
+    const novosselecteds = [...selecteds];
+    novosselecteds[index] = !novosselecteds[index];
+    setSelecteds(novosselecteds);
   };
 
   //Functions de Paginação
@@ -157,41 +220,37 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct,  handleEditProd
     setCurrentPage((prev) => Math.max(prev - 1, 0));
   };
 
-    // Função que será chamada para realizar a requisição com base no filtro
-    const filterData = async (searchTerm: string, field: string) => {
-      try {
-        const res = await fetch(
-          //Esconder url da api futuramente
-          `http://26.56.52.76:8000/getproducts?limit=${ITEMS_PER_PAGE}&page=${
-            currentPage + 1
-          }&field=${field}&filter=${searchTerm}`
-        );
-        const data = await res.json();
-        console.log(data);
-        setProducts(data.products)
-        setCurrentPage(0);
-        setTotalPages(data.totalPages);
-    
-      }catch{
-        console.log("Ocorreu algum erro")
-      }
-    };
-  
+  // Função que será chamada para realizar a requisição com base no filtro
+  const filterData = async (searchTerm: string, field: string) => {
+    try {
+      const res = await fetch(
+        //Esconder url da api futuramente
+        `http://26.56.52.76:8000/getproducts?limit=${ITEMS_PER_PAGE}&page=${
+          currentPage + 1
+        }&field=${field}&filter=${searchTerm}`
+      );
+      const data = await res.json();
+      console.log(data);
+      setProducts(data.products);
+      setCurrentPage(0);
+      setTotalPages(data.totalPages);
+    } catch {
+      console.log("Ocorreu algum erro");
+    }
+  };
 
-    // Debounce da função fetchData]
-    //Só chama a req de filtro depois de 500ms ou seja
-    //Vai esperar 500ms para ver se outra tecla não vai ser pressionada
-    //Evitando várias reqs ao db
-    const debouncedFetchData = useCallback(
-      debounce((value: string, field: string) => filterData(value, field), 500), // 500ms de atraso
-      []
-    );
-  
+  // Debounce da função fetchData]
+  //Só chama a req de filtro depois de 500ms ou seja
+  //Vai esperar 500ms para ver se outra tecla não vai ser pressionada
+  //Evitando várias reqs ao db
+  const debouncedFetchData = useCallback(
+    debounce((value: string, field: string) => filterData(value, field), 500), // 500ms de atraso
+    []
+  );
 
   // Function onchange do input de pesquisar, caso um filtro não esteja selecionado
   //Solicita a escolha de um e reseta os estados abaixo
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-
     if (selectedOption == null) {
       toast.info("Selecione um Filtro antes de pesquisar");
       setSearchTerm("");
@@ -199,13 +258,12 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct,  handleEditProd
       return;
     }
 
-    const fieldValue = tableFilter[selectedOption].field
-    console.log(fieldValue)
+    const fieldValue = tableFilter[selectedOption].field;
+    console.log(fieldValue);
     const value = e.target.value;
     setSearchTerm(value);
     debouncedFetchData(value, fieldValue);
   };
-
 
   //Variavel para realizar o zebramento da lista
   //Com base no tamanho do array
@@ -228,7 +286,7 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct,  handleEditProd
   const handleClearOptionClick = () => {
     setSelectedOption(null);
     setSearchTerm("");
-    setProducts(initialProducts)
+    setProducts(initialProducts);
     setTotalPages(initialTotalPages);
   };
 
@@ -253,7 +311,6 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct,  handleEditProd
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
 
   return (
     <main className={styles.main}>
@@ -320,7 +377,7 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct,  handleEditProd
               />
             </svg>
           </div>
-          <div className={styles.icon}>
+          <div className={styles.icon} onClick={deleteProducts}>
             <svg
               width="24"
               height="24"
@@ -383,12 +440,12 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct,  handleEditProd
                 (startIndex + index) % 2 === 0
                   ? styles.linhaPar
                   : styles.linhaImpar
-              } ${selecionados[startIndex + index] ? styles.selecionado : ""}`}
+              } ${selecteds[startIndex + index] ? styles.selecionado : ""}`}
             >
               <td className={styles.checkbox}>
                 <input
                   type="checkbox"
-                  checked={!!selecionados[startIndex + index]} // Garante que seja um booleano
+                  checked={!!selecteds[startIndex + index]} // Garante que seja um booleano
                   onChange={() => handleCheckboxChange(startIndex + index)}
                   id={`checkBox-${startIndex + index}`}
                 />
@@ -408,7 +465,7 @@ const TableData: React.FC<TableDataProps> = ({ handleAddProduct,  handleEditProd
       </table>
       <div className={styles.paginacao}>
         <div>
-          Página {currentPage + 1} de {totalPages== 0 ? 1 : totalPages}
+          Página {currentPage + 1} de {totalPages == 0 ? 1 : totalPages}
         </div>
         <button
           className={styles.btnArrowLeft}
