@@ -7,12 +7,18 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { toast } from "react-toastify";
 
+//Interfaces
+
 interface CadastroProdutosSheetProps {
   clearFormFlag: boolean;
   addProductFlag: boolean;
   resetFlags: () => void; // Função para resetar os flags
   handleAddProduct: () => void; // Função para adicionar o produto
   handleClearForm: () => void; // Função para limpar o formulário
+}
+
+interface unityType {
+  name: string;
 }
 
 // Definindo átomos para cada campo de input
@@ -54,6 +60,38 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const [liquidWeight, setLiquidWeight] = useAtom(liquidWeightAtom);
   // Estado de mensagens de erro
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [unitySelect, setUnitySelect] = useState<unityType[]>([]);
+
+  //DAdos para preencher o select que vem do banco
+  useEffect(() => {
+    // Função para buscar os dados
+    const fetchData = async () => {
+      try {
+        // Realiza as três requisições em paralelo usando Promise.all
+        const [responseUnity] = await Promise.all([
+          fetch("http://26.56.52.76:8000/getunitytypes"),
+ /*          fetch("http://api.exemplo2.com/data"),
+          fetch("http://api.exemplo3.com/data"), */
+        ]);
+
+        // Verifica se as respostas foram bem-sucedidas
+        if (!responseUnity.ok) {
+          throw new Error("Erro ao buscar dados");
+
+        }
+
+        // Converte as respostas para JSON
+        const dataUnity = await responseUnity.json();
+
+        // Atualiza os estados com os dados recebidos
+        setUnitySelect(dataUnity);
+      } catch (error) {
+        console.error("Erro na requisição:", error);
+      }
+    };
+
+    fetchData(); // Chama a função de busca de dados
+  }, []);
 
   //Function para resetar os valores quando o form é enviado
   const resetForm = () => {
@@ -104,13 +142,13 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
       ncm: ncm,
       ...(exNcm && { ex_ncm: parseInt(exNcm) }),
       ...(cestId && { cestId: parseInt(cestId) }),
-      ...(price && { price: parseInt(price) }),
+      ...(price && { price: parseFloat(price) }),
       groupId,
       subGroupId,
       ...(reservedStock && { reserved_stock: parseInt(reservedStock) }),
       ...(stock && { stock: parseInt(stock) }),
-      ...(grossWeight && { gross_weight: parseInt(grossWeight) }),
-      ...(liquidWeight && { liquid_weight: parseInt(liquidWeight) }),
+      ...(grossWeight && { gross_weight: parseFloat(grossWeight) }),
+      ...(liquidWeight && { liquid_weight: parseFloat(liquidWeight) }),
     };
 
     // Fazer REQ da API
@@ -128,18 +166,15 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
       // Verifica se a resposta foi bem-sucedida
       if (!response.ok) {
         toast.error("Ocorreu um erro de requisição, tente novamente!");
-        return
+        return;
       }
 
-      if(response.status === 201){
-         
+      if (response.status === 201) {
         //Api não retorna json, então não fazer nada com response
-        
+
         console.log("Produto postado com sucesso:");
         toast.success("Produto adicionado com sucesso!");
       }
-  
-
     } catch (error) {
       console.log(error);
       toast.error("Erro ao postar o produto");
@@ -165,6 +200,25 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     target.value = target.value.replace(/\D/g, ""); // Remove qualquer coisa que não seja número
   };
 
+  const handleInputNumberFloat = (e: React.FormEvent<HTMLInputElement>): void => {
+    const target = e.target as HTMLInputElement;
+    
+    // Permite apenas números, vírgulas e pontos como caracteres válidos
+    target.value = target.value.replace(/[^0-9,\.]/g, "");
+  
+    // Permite apenas um ponto ou uma vírgula
+    // Caso a vírgula seja encontrada, converte para ponto para evitar duplicidade
+    if (target.value.indexOf(',') !== -1) {
+      target.value = target.value.replace(',', '.');
+    }
+  
+    // Limita para que apenas um ponto seja inserido
+    const pointCount = target.value.split('.').length - 1;
+    if (pointCount > 1) {
+      target.value = target.value.substring(0, target.value.lastIndexOf('.'));
+    }
+  };
+
   // Função para limpar a mensagem de erro quando o usuário começar a digitar (Select)
   const handleSelectChange = (
     setter: React.Dispatch<React.SetStateAction<string | null>>
@@ -174,6 +228,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
       setErrorMessage(null); // Limpa a mensagem de erro ao selecionar
     };
   };
+
 
   // Funções para tratar as flags de controle
   useEffect(() => {
@@ -226,9 +281,9 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                   className={styles.unityInput}
                 >
                   <option value="">Selecione</option>
-                  <option value="L">L</option>
-                  <option value="G">G</option>
-                  <option value="KG">KG</option>
+                  {unitySelect.map((unity)=>(
+                    <option key={unity.name} value={unity.name}>{unity.name}</option>
+                  ))}
                 </select>
                 <Image
                   src={"icons/search-input-icon.svg"}
@@ -320,7 +375,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                 value={price || ""}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="ex: 250"
-                onInput={handleInputNumber}
+                onInput={handleInputNumberFloat}
                 className={styles.priceInput}
               />
             </div>
@@ -394,7 +449,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                 value={grossWeight || ""}
                 onChange={(e) => setGrossWeight(e.target.value)}
                 placeholder="ex: 100"
-                onInput={handleInputNumber}
+                onInput={handleInputNumberFloat}
               />
             </div>
 
@@ -405,7 +460,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                 value={liquidWeight || ""}
                 onChange={(e) => setLiquidWeight(e.target.value)}
                 placeholder="ex: 80"
-                onInput={handleInputNumber}
+                onInput={handleInputNumberFloat}
               />
             </div>
             <div className={styles.adjustSpace}></div>
