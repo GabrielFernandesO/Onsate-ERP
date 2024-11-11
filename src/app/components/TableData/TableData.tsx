@@ -6,6 +6,11 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import debounce from "lodash/debounce";
 import { toast } from "react-toastify";
+import { atom, useAtom } from "jotai";
+
+
+//Global Variables
+export const idEditAtom = atom<number | null>(null);
 
 //Interfaces
 
@@ -104,6 +109,7 @@ const TableData: React.FC<TableDataProps> = ({
   const [products, setProducts] = useState<Products[]>([]);
   const [initialProducts, setInitialProducts] = useState<Products[]>([]);
   const [initialTotalPages, setInitialTotalPages] = useState<number>(0);
+  const [, setIdForEdit] = useAtom(idEditAtom);
 
   //Req de busca de dados da tabela ao criar o componente
   useEffect(() => {
@@ -137,6 +143,25 @@ const TableData: React.FC<TableDataProps> = ({
 
   //Functio para enviar ao elemento pai o clique de renderizar a página de edit de produtos
   const toggleAddEditProduct = () => {
+    const selectID = products
+    .filter((_, index) => selecteds[index]) // Filtra os produtos onde a seleção é true
+    .map((product) => product.id); // Mapeia para pegar os IDs dos produtos selecionados
+
+
+    //Validações para ir para a page de edição do produto
+    if(selectID.length == 0){
+      toast.info("Selecione um produto para editar.");
+      return;
+    }
+
+    if(selectID.length > 1){
+      toast.info("Somente um produto pode ser editado por vez.")
+      return;
+    }
+
+    console.log(selectID, "ID")
+    //Set ID FOR EDIT GLOBAL
+    setIdForEdit(selectID[0])
     handleEditProduct();
   };
 
@@ -154,6 +179,8 @@ const TableData: React.FC<TableDataProps> = ({
       toast.info("Nenhum produto selecionado para deletar.");
       return;
     }
+
+    //MODAL DE DELEÇÃO
 
     //Req Delete
     try {

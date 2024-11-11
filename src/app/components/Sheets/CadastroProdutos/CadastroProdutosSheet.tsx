@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { toast } from "react-toastify";
 
+
 //Interfaces
 
 interface CadastroProdutosSheetProps {
@@ -17,7 +18,8 @@ interface CadastroProdutosSheetProps {
   handleClearForm: () => void; // Função para limpar o formulário
 }
 
-interface unityType {
+interface selectType {
+  id: number;
   name: string;
 }
 
@@ -30,8 +32,8 @@ export const ncmAtom = atom<string | null>(null);
 export const exNcmAtom = atom<string | null>(null);
 export const cestIdAtom = atom<string | null>(null);
 export const priceAtom = atom<string | null>(null);
-export const groupIdAtom = atom<number | null>(null);
-export const subGroupIdAtom = atom<number | null>(null);
+export const groupIdAtom = atom<string | null>(null);
+export const subGroupIdAtom = atom<string | null>(null);
 export const reservedStockAtom = atom<string | null>(null);
 export const stockAtom = atom<string | null>(null);
 export const grossWeightAtom = atom<string | null>(null);
@@ -60,7 +62,10 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const [liquidWeight, setLiquidWeight] = useAtom(liquidWeightAtom);
   // Estado de mensagens de erro
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [unitySelect, setUnitySelect] = useState<unityType[]>([]);
+  //Data para selects
+  const [unitySelect, setUnitySelect] = useState<selectType[]>([]);
+  const [groupSelect, setGroupSelect] = useState<selectType[]>([]);
+  const [subGroupSelect, setSubGroupSelect] = useState<selectType[]>([]);
 
   //DAdos para preencher o select que vem do banco
   useEffect(() => {
@@ -68,23 +73,26 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     const fetchData = async () => {
       try {
         // Realiza as três requisições em paralelo usando Promise.all
-        const [responseUnity] = await Promise.all([
+        const [responseUnity, responseGroups] = await Promise.all([
           fetch("http://26.56.52.76:8000/getunitytypes"),
- /*          fetch("http://api.exemplo2.com/data"),
-          fetch("http://api.exemplo3.com/data"), */
+          fetch("http://26.56.52.76:8000/getgroups"),
+          //fetch("http://api.exemplo3.com/data"),
         ]);
 
         // Verifica se as respostas foram bem-sucedidas
-        if (!responseUnity.ok) {
+        if (!responseUnity.ok || !responseGroups.ok) {
           throw new Error("Erro ao buscar dados");
-
         }
 
         // Converte as respostas para JSON
         const dataUnity = await responseUnity.json();
+        const dataGroup = await responseGroups.json();
 
         // Atualiza os estados com os dados recebidos
         setUnitySelect(dataUnity);
+        setGroupSelect(dataGroup);
+
+        console.log(dataGroup, "Aqui");
       } catch (error) {
         console.error("Erro na requisição:", error);
       }
@@ -92,6 +100,30 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
 
     fetchData(); // Chama a função de busca de dados
   }, []);
+
+  //Function para puxar o relacional do Grupo com seus grupos
+  const handleSubGroups = async (id: number) =>{
+    try{
+      const response = await fetch(`http://26.56.52.76:8000/getsubgroups?groupsId=${id}`)
+
+      const data = await response.json()
+
+      setSubGroupSelect(data);
+      console.log(data);
+
+      if(!response.ok){
+        console.log("Erro na chamada");
+        toast.error("O Grupo procurado não tem Sub-Grupos")
+      }
+
+
+
+
+    }catch(err){
+      console.error(err)
+      toast.error("Erro na requisição")
+    }
+  }
 
   //Function para resetar os valores quando o form é enviado
   const resetForm = () => {
@@ -143,8 +175,8 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
       ...(exNcm && { ex_ncm: parseInt(exNcm) }),
       ...(cestId && { cestId: parseInt(cestId) }),
       ...(price && { price: parseFloat(price) }),
-      groupId,
-      subGroupId,
+      ...(groupId && { group: parseInt(groupId) }),
+      ...(subGroupId && { sub_group: parseInt(subGroupId) }),
       ...(reservedStock && { reserved_stock: parseInt(reservedStock) }),
       ...(stock && { stock: parseInt(stock) }),
       ...(grossWeight && { gross_weight: parseFloat(grossWeight) }),
@@ -200,22 +232,24 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     target.value = target.value.replace(/\D/g, ""); // Remove qualquer coisa que não seja número
   };
 
-  const handleInputNumberFloat = (e: React.FormEvent<HTMLInputElement>): void => {
+  const handleInputNumberFloat = (
+    e: React.FormEvent<HTMLInputElement>
+  ): void => {
     const target = e.target as HTMLInputElement;
-    
+
     // Permite apenas números, vírgulas e pontos como caracteres válidos
     target.value = target.value.replace(/[^0-9,\.]/g, "");
-  
+
     // Permite apenas um ponto ou uma vírgula
     // Caso a vírgula seja encontrada, converte para ponto para evitar duplicidade
-    if (target.value.indexOf(',') !== -1) {
-      target.value = target.value.replace(',', '.');
+    if (target.value.indexOf(",") !== -1) {
+      target.value = target.value.replace(",", ".");
     }
-  
+
     // Limita para que apenas um ponto seja inserido
-    const pointCount = target.value.split('.').length - 1;
+    const pointCount = target.value.split(".").length - 1;
     if (pointCount > 1) {
-      target.value = target.value.substring(0, target.value.lastIndexOf('.'));
+      target.value = target.value.substring(0, target.value.lastIndexOf("."));
     }
   };
 
@@ -229,6 +263,15 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     };
   };
 
+  const handleSelectChangeGroup = (
+    setter: React.Dispatch<React.SetStateAction<string | null>>
+  ) => {
+    return (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setter(e.target.value || null); // Atualiza o valor ou atribui null caso esteja vazio
+      setErrorMessage(null); // Limpa a mensagem de erro ao selecionar
+      handleSubGroups(parseInt(e.target.value))
+    };
+  };
 
   // Funções para tratar as flags de controle
   useEffect(() => {
@@ -281,8 +324,10 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                   className={styles.unityInput}
                 >
                   <option value="">Selecione</option>
-                  {unitySelect.map((unity)=>(
-                    <option key={unity.name} value={unity.name}>{unity.name}</option>
+                  {unitySelect.map((unity) => (
+                    <option key={unity.name} value={unity.name}>
+                      {unity.name}
+                    </option>
                   ))}
                 </select>
                 <Image
@@ -388,14 +433,15 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                 {" "}
                 <select
                   value={groupId || ""}
-                  onChange={(e) =>
-                    setGroupId(e.target.value ? Number(e.target.value) : null)
-                  }
+                  onChange={handleSelectChangeGroup(setGroupId)}
+                  className={styles.groupInput}
                 >
                   <option value="">Selecione</option>
-                  <option value={1}>Camisas</option>
-                  <option value={2}>Futebol</option>
-                  <option value={3}>Calças</option>
+                  {groupSelect.map((group) => (
+                    <option key={group.id} value={group.id}>
+                      {group.name}
+                    </option>
+                  ))}
                 </select>
                 <Image
                   src={"icons/search-input-icon.svg"}
@@ -409,18 +455,17 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
             <div className={styles.inputWrapContainer}>
               <label>Sub grupo</label>
               <div className={styles.divInputIcon}>
-                <select
+              <select
                   value={subGroupId || ""}
-                  onChange={(e) =>
-                    setSubGroupId(
-                      e.target.value ? Number(e.target.value) : null
-                    )
-                  }
+                  onChange={handleSelectChange(setSubGroupId)}
+                  className={styles.subGroupInput}
                 >
                   <option value="">Selecione</option>
-                  <option value={1}>Tamanho P</option>
-                  <option value={2}>Bola de Futebol</option>
-                  <option value={3}>Tamanho 42</option>
+                  {subGroupSelect.map((subroup) => (
+                    <option key={subroup.id} value={subroup.id}>
+                      {subroup.name}
+                    </option>
+                  ))}
                 </select>
                 <Image
                   src={"icons/search-input-icon.svg"}

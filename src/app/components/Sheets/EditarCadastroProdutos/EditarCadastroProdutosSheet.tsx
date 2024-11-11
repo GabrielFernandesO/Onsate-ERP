@@ -1,37 +1,54 @@
 "use client";
 
 import React from "react";
-import styles from "./EditarCadastroProdutosSheet.module.css"
-import { atom, useAtom } from "jotai";
+import styles from "./EditarCadastroProdutosSheet.module.css";
+import { useAtom } from "jotai";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-/* import { toast } from "react-toastify"; */
+import { toast } from "react-toastify";
+import { idEditAtom } from "../../TableData/TableData";
 
 interface EditarCadastroProdutosSheetProps {
   clearFormFlag: boolean;
   addProductFlag: boolean;
   resetFlags: () => void; // Função para resetar os flags
-  handleAddProduct: () => void;  // Função para adicionar o produto
-  handleClearForm: () => void;   // Função para limpar o formulário
+  handleAddProduct: () => void; // Função para adicionar o produto
+  handleClearForm: () => void; // Função para limpar o formulário
 }
 
-// Definindo átomos para cada campo de input
-//Irão inicializar os valores nos inputs
-export const descriptionAtom = atom<string | null>(null);
-export const unityTypeAtom = atom<string | null>(null);
-export const barCodeAtom = atom<string | null>(null);
-export const ncmAtom = atom<string | null>(null);
-export const exNcmAtom = atom<string | null>(null);
-export const cestIdAtom = atom<string | null>(null);
-export const priceAtom = atom<string | null>(null);
-export const groupIdAtom = atom<number | null>(null);
-export const subGroupIdAtom = atom<number | null>(null);
-export const reservedStockAtom = atom<string | null>(null);
-export const stockAtom = atom<string | null>(null);
-export const grossWeightAtom = atom<string | null>(null);
-export const liquidWeightAtom = atom<string | null>(null);
+interface GroupOrSubgroup {
+  name: string;
+}
 
-const EditarCadastroProdutosSheet: React.FC<EditarCadastroProdutosSheetProps> = ({
+interface GetProductID {
+  id: number;
+  description: string;
+  price: number;
+  bar_code: string;
+  ex_ncm: number;
+  reserved_stock: number;
+  gross_weight: number;
+  liquid_weight: number;
+  stock: number;
+  ncmId: string;
+  unityTypeId: string;
+  group: number;
+  cestId: string;
+  sub_group: number;
+  createdAt: string;
+  updatedAt: string;
+  Group: GroupOrSubgroup;
+  SubGroup: GroupOrSubgroup;
+}
+
+interface selectType {
+  id: number;
+  name: string;
+}
+
+const EditarCadastroProdutosSheet: React.FC<
+  EditarCadastroProdutosSheetProps
+> = ({
   clearFormFlag,
   addProductFlag,
   resetFlags,
@@ -39,46 +56,97 @@ const EditarCadastroProdutosSheet: React.FC<EditarCadastroProdutosSheetProps> = 
   handleClearForm,
 }) => {
   // Usando os átomos com useAtom para obter e definir o estado
-  const [description, setDescription] = useAtom(descriptionAtom);
-  const [unityType, setUnityType] = useAtom(unityTypeAtom);
-  const [barCode, setBarCode] = useAtom(barCodeAtom);
-  const [ncm, setNcm] = useAtom(ncmAtom);
-  const [exNcm, setExNcm] = useAtom(exNcmAtom);
-  const [cestId, setCestId] = useAtom(cestIdAtom);
-  const [price, setPrice] = useAtom(priceAtom);
-  const [groupId, setGroupId] = useAtom(groupIdAtom);
-  const [subGroupId, setSubGroupId] = useAtom(subGroupIdAtom);
-  const [reservedStock, setReservedStock] = useAtom(reservedStockAtom);
-  const [stock, setStock] = useAtom(stockAtom);
-  const [grossWeight, setGrossWeight] = useAtom(grossWeightAtom);
-  const [liquidWeight, setLiquidWeight] = useAtom(liquidWeightAtom);
+  const [dataGetProduct, setDataGetProduct] = useState<GetProductID[]>([]);
+  const [description, setDescription] = useState<string | null>("");
+  const [unityType, setUnityType] = useState<string | null>("");
+  const [barCode, setBarCode] = useState<string | null>("");
+  const [ncm, setNcm] = useState<string | null>("");
+  const [exNcm, setExNcm] = useState<string | null>("");
+  const [cestId, setCestId] = useState<string | null>("");
+  const [price, setPrice] = useState<string | null>(null);
+  const [groupId, setGroupId] = useState<string | null>(null);
+  const [subGroupId, setSubGroupId] = useState<string | null>(null);
+  const [reservedStock, setReservedStock] = useState<string | null>(null);
+  const [stock, setStock] = useState<string | null>(null);
+  const [grossWeight, setGrossWeight] = useState<string | null>(null);
+  const [liquidWeight, setLiquidWeight] = useState<string | null>(null);
   // Estado de mensagens de erro
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  //ID Edit Cadastro
+  const [idForEdit] = useAtom(idEditAtom);
+
+  const [unitySelect, setUnitySelect] = useState<selectType[]>([]);
+  const [groupSelect, setGroupSelect] = useState<selectType[]>([]);
+  const [subGroupSelect, setSubGroupSelect] = useState<selectType[]>([]);
+
+  useEffect(() => {
+    // Função para buscar os dados
+    const fetchData = async () => {
+      try {
+        // Realiza as três requisições em paralelo usando Promise.all
+        const [responseUnity, responseGroups, responseProductEdit] =
+          await Promise.all([
+            fetch("http://26.56.52.76:8000/getunitytypes"),
+            fetch("http://26.56.52.76:8000/getgroups"),
+            fetch(
+              `http://26.56.52.76:8000/getproducts?limit=1&page=1&id=${idForEdit}`
+            ),
+          ]);
+
+        // Verifica se as respostas foram bem-sucedidas
+        if (
+          !responseUnity.ok ||
+          !responseGroups.ok ||
+          !responseProductEdit.ok
+        ) {
+          throw new Error("Erro ao buscar dados");
+        }
+
+        // Converte as respostas para JSON
+        const dataUnity = await responseUnity.json();
+        const dataGroup = await responseGroups.json();
+        const dataProduct = await responseProductEdit.json();
+
+        // Atualiza os estados com os dados recebidos
+        setUnitySelect(dataUnity);
+        setGroupSelect(dataGroup);
+        setDataGetProduct(dataProduct.products);
+
+        console.log("Product edit", dataProduct.products);
+
+        console.log(dataGroup, "Aqui");
+      } catch (error) {
+        console.error("Erro na requisição:", error);
+      }
+    };
+
+    fetchData(); // Chama a função de busca de dados
+  }, []);
 
   //Function para resetar os valores quando o form é enviado
   const resetForm = () => {
     setDescription("");
     setUnityType("");
-    setBarCode("");
+    setBarCode(null);
     setNcm("");
-    setExNcm("");
+    setExNcm(null);
     setCestId("");
-    setPrice("");
+    setPrice(null);
     setGroupId(null);
     setSubGroupId(null);
-    setReservedStock("");
-    setStock("");
-    setGrossWeight("");
-    setLiquidWeight("");
+    setReservedStock(null);
+    setStock(null);
+    setGrossWeight(null);
+    setLiquidWeight(null);
   };
 
   //Function para enviar os dados para o backend
   const handleSubmit = async () => {
-
-    let error: string | null = null;
+    /* 
+    let error: string | null = null; */
 
     // Verificando se os campos estão vazios
-    if (!description || description.trim() === "") {
+    /*     if (!description || description.trim() === "") {
       error = "O campo descrição não pode estar vazio.";
     } else if (!unityType || unityType.trim() === "") {
       error = "O campo unidade não pode estar vazio.";
@@ -86,18 +154,18 @@ const EditarCadastroProdutosSheet: React.FC<EditarCadastroProdutosSheetProps> = 
       error = "O campo NCM não pode estar vazio.";
     } else if (!price || price.trim() === "") {
       error = "O campo preço de venda não pode estar vazio.";
-    }
+    } */
 
-    // Se algum erro foi encontrado, define o erro e não envia os dados
+    /*    // Se algum erro foi encontrado, define o erro e não envia os dados
     if (error) {
       setErrorMessage(error);
       return; // Impede o envio dos dados se houver erro
-    }
+    } */
 
     // Se não houver erro, limpa a mensagem de erro
     setErrorMessage(null);
 
-    // Dados do formulário
+    /*     // Dados do formulário
     const dataForm = {
       description,
       unity_type: unityType,
@@ -112,11 +180,11 @@ const EditarCadastroProdutosSheet: React.FC<EditarCadastroProdutosSheetProps> = 
       stock: parseInt(stock || ""),
       gross_weight: parseFloat(grossWeight || ""),
       liquid_weight: parseFloat(liquidWeight || ""),
-    };
+    }; */
 
     // Fazer REQ da API
-    console.log("Formulário enviado com sucesso!", dataForm);
-/* 
+
+    /* 
     try {
       const response = await fetch('http://26.56.52.76:4001/postproducts', {
         method: 'POST',  // Usando POST para enviar dados
@@ -172,24 +240,54 @@ const EditarCadastroProdutosSheet: React.FC<EditarCadastroProdutosSheetProps> = 
     };
   };
 
+  //Function para puxar o relacional do Grupo com seus grupos
+  const handleSubGroups = async (id: number) => {
+    try {
+      const response = await fetch(
+        `http://26.56.52.76:8000/getsubgroups?groupsId=${id}`
+      );
 
+      const data = await response.json();
 
- // Funções para tratar as flags de controle
- useEffect(() => {
-  if (clearFormFlag) {
-    resetForm();
-    handleClearForm()
-    resetFlags(); // Reseta os flags no pai
-  }
-}, [clearFormFlag, resetFlags]);
+      setSubGroupSelect(data);
+      console.log(data);
 
-useEffect(() => {
-  if (addProductFlag) {
-    handleAddProduct();
-    handleSubmit(); // Passando um objeto vazio como evento
-    resetFlags(); // Reseta os flags no pai
-  }
-}, [addProductFlag, resetFlags, handleAddProduct]);
+      if (!response.ok) {
+        console.log("Erro na chamada");
+        toast.error("O Grupo procurado não tem Sub-Grupos");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro na requisição");
+    }
+  };
+
+  const handleSelectChangeGroup = (
+    setter: React.Dispatch<React.SetStateAction<string | null>>
+  ) => {
+    return (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setter(e.target.value || null); // Atualiza o valor ou atribui null caso esteja vazio
+      setErrorMessage(null); // Limpa a mensagem de erro ao selecionar
+      handleSubGroups(parseInt(e.target.value));
+    };
+  };
+
+  // Funções para tratar as flags de controle
+  useEffect(() => {
+    if (clearFormFlag) {
+      resetForm();
+      handleClearForm();
+      resetFlags(); // Reseta os flags no pai
+    }
+  }, [clearFormFlag, resetFlags]);
+
+  useEffect(() => {
+    if (addProductFlag) {
+      handleAddProduct();
+      handleSubmit(); // Passando um objeto vazio como evento
+      resetFlags(); // Reseta os flags no pai
+    }
+  }, [addProductFlag, resetFlags, handleAddProduct]);
 
   return (
     <main className={styles.main}>
@@ -201,16 +299,24 @@ useEffect(() => {
             </div>
           )}
           <div className={styles.firstLineInput}>
-            <label>
-              Descrição<span style={{ color: "red" }}>*</span>
-            </label>
-            <input
-              type="text"
-              value={description || ""}
-              onChange={handleInputChange(setDescription)}
-              maxLength={100}
-              placeholder="ex: papel grafite"
-            />
+            <div className={styles.idInput}>
+              <label>Código</label>
+              <input disabled={true} value={idForEdit || ""} />
+            </div>
+            <div className={styles.descriptionInput}>
+              <label>
+                Descrição<span style={{ color: "red" }}>*</span>
+              </label>
+              <input
+                type="text"
+                value={
+                  description || dataGetProduct.length > 0 ? dataGetProduct[0].description : ""
+                }
+                onChange={handleInputChange(setDescription)}
+                maxLength={100}
+                disabled={true}
+              />
+            </div>
           </div>
 
           <div className={styles.secondLineInputs}>
@@ -223,11 +329,24 @@ useEffect(() => {
                   value={unityType || ""}
                   onChange={handleSelectChange(setUnityType)}
                   className={styles.unityInput}
+                  disabled={true}
                 >
-                  <option value="">Selecione</option>
-                  <option value="L">L</option>
-                  <option value="G">G</option>
-                  <option value="KG">KG</option>
+                  <option
+                    value={
+                      dataGetProduct.length > 0
+                        ? dataGetProduct[0].unityTypeId
+                        : ""
+                    }
+                  >
+                    {dataGetProduct.length > 0
+                      ? dataGetProduct[0].unityTypeId
+                      : unityType}
+                  </option>
+                  {unitySelect.map((unity) => (
+                    <option key={unity.name} value={unity.name}>
+                      {unity.name}
+                    </option>
+                  ))}
                 </select>
                 <Image
                   src={"icons/search-input-icon.svg"}
@@ -242,12 +361,12 @@ useEffect(() => {
               <label>Código de barras</label>
               <input
                 type="text"
-                value={barCode || ""}
+                value={barCode || dataGetProduct.length > 0 ? dataGetProduct[0].bar_code : ""}
                 onChange={(e) => setBarCode(e.target.value)}
                 maxLength={13}
-                placeholder="ex: 1698189354175"
                 onInput={handleInputNumber}
                 className={styles.barCodeInput}
+                disabled={true}
               />
             </div>
 
@@ -260,8 +379,9 @@ useEffect(() => {
                   value={ncm || ""}
                   onChange={handleSelectChange(setNcm)}
                   className={styles.ncmInput}
+                  disabled={true}
                 >
-                  <option value="">Selecione</option>
+                  <option value={dataGetProduct.length > 0 ? dataGetProduct[0].ncmId : ""}>{dataGetProduct.length > 0 ? dataGetProduct[0].ncmId : ""}</option>
                   <option value="12345678">12345678</option>
                   <option value="12345665">12345665</option>
                   <option value="12343278">12343278</option>
@@ -279,12 +399,12 @@ useEffect(() => {
               <label>EX NCM</label>
               <input
                 type="text"
-                value={exNcm || ""}
+                value={exNcm || dataGetProduct.length > 0 ? dataGetProduct[0].ex_ncm : ""}
                 onChange={(e) => setExNcm(e.target.value)}
-                placeholder="ex: 1698"
                 maxLength={4}
                 onInput={handleInputNumber}
                 className={styles.ex_ncmInput}
+                disabled
               />
             </div>
 
@@ -295,8 +415,9 @@ useEffect(() => {
                   value={cestId || ""}
                   onChange={(e) => setCestId(e.target.value)}
                   className={styles.cestIdInput}
+                  disabled = {true}
                 >
-                  <option value="">Selecione</option>
+                  <option value={dataGetProduct.length > 0 ? dataGetProduct[0].cestId : ""}>{dataGetProduct.length > 0 ? dataGetProduct[0].cestId : ""}</option>
                   <option value="1232145">1232145</option>
                   <option value="1235214">1235214</option>
                   <option value="6523145">6523145</option>
@@ -316,11 +437,12 @@ useEffect(() => {
               </label>
               <input
                 type="text"
-                value={price || ""}
+                value={price || dataGetProduct.length > 0 ? dataGetProduct[0].price : ""}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="ex: 250"
                 onInput={handleInputNumber}
                 className={styles.priceInput}
+                disabled={true}
               />
             </div>
           </div>
@@ -332,14 +454,16 @@ useEffect(() => {
                 {" "}
                 <select
                   value={groupId || ""}
-                  onChange={(e) =>
-                    setGroupId(e.target.value ? Number(e.target.value) : null)
-                  }
+                  onChange={handleSelectChangeGroup(setGroupId)}
+                  disabled={true}
+                  className={styles.groupInput}
                 >
-                  <option value="">Selecione</option>
-                  <option value={1}>Camisas</option>
-                  <option value={2}>Futebol</option>
-                  <option value={3}>Calças</option>
+                  <option value={dataGetProduct.length > 0 ? dataGetProduct[0].Group.name : ""}>{dataGetProduct.length > 0 ? dataGetProduct[0].Group.name : ""}</option>
+                  {groupSelect.map((group) => (
+                    <option key={group.id} value={group.id}>
+                      {group.name}
+                    </option>
+                  ))}
                 </select>
                 <Image
                   src={"icons/search-input-icon.svg"}
@@ -355,16 +479,16 @@ useEffect(() => {
               <div className={styles.divInputIcon}>
                 <select
                   value={subGroupId || ""}
-                  onChange={(e) =>
-                    setSubGroupId(
-                      e.target.value ? Number(e.target.value) : null
-                    )
-                  }
+                  onChange={handleSelectChangeGroup(setSubGroupId)}
+                  disabled = {true}
+                  className={styles.subGroupInput}
                 >
-                  <option value="">Selecione</option>
-                  <option value={1}>Tamanho P</option>
-                  <option value={2}>Bola de Futebol</option>
-                  <option value={3}>Tamanho 42</option>
+                  <option value={dataGetProduct.length > 0 ? dataGetProduct[0].SubGroup.name : ""}>{dataGetProduct.length > 0 ? dataGetProduct[0].SubGroup.name : ""}</option>
+                  {subGroupSelect.map((subroup) => (
+                    <option key={subroup.id} value={subroup.id}>
+                      {subroup.name}
+                    </option>
+                  ))}
                 </select>
                 <Image
                   src={"icons/search-input-icon.svg"}
@@ -379,10 +503,10 @@ useEffect(() => {
               <label>Estoque reservado</label>
               <input
                 type="text"
-                value={reservedStock || ""}
+                value={reservedStock || dataGetProduct.length > 0 ? dataGetProduct[0].reserved_stock : ""}
                 onChange={(e) => setReservedStock(e.target.value)}
-                placeholder="ex: 5"
                 onInput={handleInputNumber}
+                disabled={true}
               />
             </div>
 
@@ -390,9 +514,9 @@ useEffect(() => {
               <label>Estoque</label>
               <input
                 type="text"
-                value={stock || ""}
+                value={stock || dataGetProduct.length > 0 ? dataGetProduct[0].stock : ""}
                 onChange={(e) => setStock(e.target.value)}
-                placeholder="ex: 20"
+                disabled={true}
                 onInput={handleInputNumber}
               />
             </div>
@@ -401,9 +525,9 @@ useEffect(() => {
               <label>Peso Bruto</label>
               <input
                 type="text"
-                value={grossWeight || ""}
+                value={grossWeight ||dataGetProduct.length > 0 ? dataGetProduct[0].gross_weight: ""}
                 onChange={(e) => setGrossWeight(e.target.value)}
-                placeholder="ex: 30"
+                disabled={true}
                 onInput={handleInputNumber}
               />
             </div>
@@ -412,9 +536,9 @@ useEffect(() => {
               <label>Peso Líquido</label>
               <input
                 type="text"
-                value={liquidWeight || ""}
+                value={liquidWeight || dataGetProduct.length > 0 ? dataGetProduct[0].liquid_weight : ""}
                 onChange={(e) => setLiquidWeight(e.target.value)}
-                placeholder="ex: 25"
+                disabled={true}
                 onInput={handleInputNumber}
               />
             </div>

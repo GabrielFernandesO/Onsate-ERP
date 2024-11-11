@@ -123,13 +123,13 @@
 }
 
 .groupInput {
-  min-width: 160px;
-  max-width: 160px;
+  min-width: 140px;
+  max-width: 140px;
 }
 
 .subGroupInput {
-  min-width: 160px;
-  max-width: 160px;
+  min-width: 140px;
+  max-width: 140px;
 }
 
 .reserved_stockInput,
