@@ -6,6 +6,7 @@ import { atom, useAtom } from "jotai";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { toast } from "react-toastify";
+import SearchSelect from "../../SearchSelect/SearchSelect";
 
 
 //Interfaces
@@ -28,7 +29,7 @@ interface selectType {
 export const descriptionAtom = atom<string | null>(null);
 export const unityTypeAtom = atom<string | null>(null);
 export const barCodeAtom = atom<string | null>(null);
-export const ncmAtom = atom<string | null>(null);
+export const ncmAtom = atom<string>("");
 export const exNcmAtom = atom<string | null>(null);
 export const cestIdAtom = atom<string | null>(null);
 export const priceAtom = atom<string | null>(null);
@@ -67,6 +68,8 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const [groupSelect, setGroupSelect] = useState<selectType[]>([]);
   const [subGroupSelect, setSubGroupSelect] = useState<selectType[]>([]);
 
+  const [inputValue, setInputValue] = useState<string>("");
+
   //DAdos para preencher o select que vem do banco
   useEffect(() => {
     // Função para buscar os dados
@@ -76,7 +79,6 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
         const [responseUnity, responseGroups] = await Promise.all([
           fetch("http://26.56.52.76:8000/getunitytypes"),
           fetch("http://26.56.52.76:8000/getgroups"),
-          //fetch("http://api.exemplo3.com/data"),
         ]);
 
         // Verifica se as respostas foram bem-sucedidas
@@ -102,28 +104,26 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   }, []);
 
   //Function para puxar o relacional do Grupo com seus grupos
-  const handleSubGroups = async (id: number) =>{
-    try{
-      const response = await fetch(`http://26.56.52.76:8000/getsubgroups?groupsId=${id}`)
+  const handleSubGroups = async (id: number) => {
+    try {
+      const response = await fetch(
+        `http://26.56.52.76:8000/getsubgroups?groupsId=${id}`
+      );
 
-      const data = await response.json()
+      const data = await response.json();
 
       setSubGroupSelect(data);
       console.log(data);
 
-      if(!response.ok){
+      if (!response.ok) {
         console.log("Erro na chamada");
-        toast.error("O Grupo procurado não tem Sub-Grupos")
+        toast.error("O Grupo procurado não tem Sub-Grupos");
       }
-
-
-
-
-    }catch(err){
-      console.error(err)
-      toast.error("Erro na requisição")
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro na requisição");
     }
-  }
+  };
 
   //Function para resetar os valores quando o form é enviado
   const resetForm = () => {
@@ -140,11 +140,14 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     setStock(null);
     setGrossWeight(null);
     setLiquidWeight(null);
+    setInputValue("");
   };
 
   //Function para enviar os dados para o backend
   const handleSubmit = async () => {
     let error: string | null = null;
+
+    console.log(inputValue);
 
     // Verificando se os campos estão vazios
     if (!description || description.trim() === "") {
@@ -269,7 +272,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     return (e: React.ChangeEvent<HTMLSelectElement>) => {
       setter(e.target.value || null); // Atualiza o valor ou atribui null caso esteja vazio
       setErrorMessage(null); // Limpa a mensagem de erro ao selecionar
-      handleSubGroups(parseInt(e.target.value))
+      handleSubGroups(parseInt(e.target.value));
     };
   };
 
@@ -289,6 +292,23 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
       resetFlags(); // Reseta os flags no pai
     }
   }, [addProductFlag, resetFlags, handleAddProduct]);
+
+ 
+  // Função para lidar com a mudança no input de busca
+  const handleInputChangeSC = (value: string) => {
+    setInputValue(value); // Atualiza o valor de busca no componente pai
+  };
+
+  // Função para lidar com a seleção do NCM
+  const handleSelectChangeNcm = (selected: { label: string; value: string } | null) => {
+    
+    if (selected) {
+      console.log('Selecionado no Pai:', selected);
+      setNcm(selected.value); // Atualiza o valor de ncm com o valor da seleção
+    } else {
+      setNcm("");  // Se nada for selecionado, limpa o valor de ncm
+    }
+  };
 
   return (
     <main className={styles.main}>
@@ -357,16 +377,11 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                 NCM<span style={{ color: "red" }}>*</span>
               </label>
               <div className={styles.divInputIcon}>
-                <select
-                  value={ncm || ""}
-                  onChange={handleSelectChange(setNcm)}
-                  className={styles.ncmInput}
-                >
-                  <option value="">Selecione</option>
-                  <option value="01">01</option>
-                  <option value="01.01">01.01</option>
-                  <option value="0101.2">0101.2</option>
-                </select>
+                <SearchSelect
+                  inputValue={ncm} // Usar ncm diretamente em vez de inputValue
+                  onInputChange={handleInputChangeSC}
+                  onSelectChange={handleSelectChangeNcm}
+                />
                 <Image
                   src={"icons/search-input-icon.svg"}
                   width={20}
@@ -375,7 +390,6 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                 />
               </div>
             </div>
-
             <div className={styles.inputWrapContainer}>
               <label>EX NCM</label>
               <input
@@ -388,7 +402,6 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                 className={styles.ex_ncmInput}
               />
             </div>
-
             <div className={styles.inputWrapContainer}>
               <label>Código CEST</label>
               <div className={styles.divInputIcon}>
@@ -455,7 +468,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
             <div className={styles.inputWrapContainer}>
               <label>Sub grupo</label>
               <div className={styles.divInputIcon}>
-              <select
+                <select
                   value={subGroupId || ""}
                   onChange={handleSelectChange(setSubGroupId)}
                   className={styles.subGroupInput}
