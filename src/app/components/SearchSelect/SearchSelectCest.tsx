@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import Select from 'react-select';
 import debounce from 'lodash/debounce';
+import styles from './SearchSelect.module.css'
 
 // Tipando as opções do select
 interface Option {
@@ -14,7 +15,7 @@ interface SearchSelectProps {
   onSelectChange: (selected: { label: string; value: string } | null) => void; // Função para passar a opção selecionada
 }
 
-const SearchSelect = ({  onInputChange, onSelectChange }: SearchSelectProps) => {
+const SearchSelectCest = ({  onInputChange, onSelectChange }: SearchSelectProps) => {
   const [options, setOptions] = useState<Option[]>([]); // Opções de busca
   const [loading, setLoading] = useState<boolean>(false); // Estado de carregamento
   const [selectedOption, setSelectedOption] = useState<Option | null>(null); // Estado para a opção selecionada
@@ -30,15 +31,15 @@ const SearchSelect = ({  onInputChange, onSelectChange }: SearchSelectProps) => 
     setLoading(true);
     try {
       // Requisição de dados ao backend
-      const response = await fetch(`http://26.56.52.76:8000/ncms?ncmfilter=${query}`);
+      const response = await fetch(`http://26.56.52.76:8000/cestcode?cestfilter=${query}`);
       if (!response.ok) {
         throw new Error('Erro ao buscar as opções');
       }
 
       const data = await response.json();
       const formattedOptions = data.map((item: { id: string }) => ({
-        label: `NCM: ${item.id}`,
-        value: item.id.toString(),
+        label: `Cest: ${item}`,
+        value: item,
       }));
 
       setOptions(formattedOptions);
@@ -72,7 +73,7 @@ const SearchSelect = ({  onInputChange, onSelectChange }: SearchSelectProps) => 
   };
 
   return (
-    <div>
+    <div className={styles.divSelect}>
       <Select
         options={options}
         value={selectedOption} // Sincronizando o valor selecionado com o estado local
@@ -80,10 +81,12 @@ const SearchSelect = ({  onInputChange, onSelectChange }: SearchSelectProps) => 
         onInputChange={handleInputChange} // Chama o handleInputChange para realizar a busca
         isLoading={loading}
         isClearable={true}
-        placeholder="Selecione uma opção"
+        placeholder="CEST"
+        className="basic-single"
+        classNamePrefix="select"
       />
     </div>
   );
 };
 
-export default SearchSelect;
+export default SearchSelectCest;

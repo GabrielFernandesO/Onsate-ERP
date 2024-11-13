@@ -6,8 +6,8 @@ import { atom, useAtom } from "jotai";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { toast } from "react-toastify";
-import SearchSelect from "../../SearchSelect/SearchSelect";
-
+import SearchSelectNcm from "../../SearchSelect/SearchSelectNCM";
+import SearchSelectCest from "../../SearchSelect/SearchSelectCest";
 
 //Interfaces
 
@@ -31,7 +31,7 @@ export const unityTypeAtom = atom<string | null>(null);
 export const barCodeAtom = atom<string | null>(null);
 export const ncmAtom = atom<string>("");
 export const exNcmAtom = atom<string | null>(null);
-export const cestIdAtom = atom<string | null>(null);
+export const cestIdAtom = atom<string>("");
 export const priceAtom = atom<string | null>(null);
 export const groupIdAtom = atom<string | null>(null);
 export const subGroupIdAtom = atom<string | null>(null);
@@ -68,7 +68,8 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const [groupSelect, setGroupSelect] = useState<selectType[]>([]);
   const [subGroupSelect, setSubGroupSelect] = useState<selectType[]>([]);
 
-  const [inputValue, setInputValue] = useState<string>("");
+  const [, setInputValueNcm] = useState<string>("");
+  const [, setInputValueCest] = useState<string>("");
 
   //DAdos para preencher o select que vem do banco
   useEffect(() => {
@@ -77,8 +78,8 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
       try {
         // Realiza as três requisições em paralelo usando Promise.all
         const [responseUnity, responseGroups] = await Promise.all([
-          fetch("http://26.56.52.76:8000/getunitytypes"),
-          fetch("http://26.56.52.76:8000/getgroups"),
+          fetch("http://26.56.52.76:8000/unitytype"),
+          fetch("http://26.56.52.76:8000/group"),
         ]);
 
         // Verifica se as respostas foram bem-sucedidas
@@ -105,23 +106,29 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
 
   //Function para puxar o relacional do Grupo com seus grupos
   const handleSubGroups = async (id: number) => {
-    try {
-      const response = await fetch(
-        `http://26.56.52.76:8000/getsubgroups?groupsId=${id}`
-      );
+    if (!id) {
+      //Não selecionou grupo, ou resetou para nada dnv
+      setSubGroupSelect([]);
+      return;
+    } else {
+      try {
+        const response = await fetch(
+          `http://26.56.52.76:8000/subgroup?groupsId=${id}`
+        );
 
-      const data = await response.json();
+        const data = await response.json();
 
-      setSubGroupSelect(data);
-      console.log(data);
+        setSubGroupSelect(data);
+        console.log(data);
 
-      if (!response.ok) {
-        console.log("Erro na chamada");
-        toast.error("O Grupo procurado não tem Sub-Grupos");
+        if (!response.ok) {
+          console.log("Erro na chamada");
+          toast.error("O Grupo procurado não tem Sub-Grupos");
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Erro na requisição");
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("Erro na requisição");
     }
   };
 
@@ -140,14 +147,12 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     setStock(null);
     setGrossWeight(null);
     setLiquidWeight(null);
-    setInputValue("");
+    setInputValueNcm("");
   };
 
   //Function para enviar os dados para o backend
   const handleSubmit = async () => {
     let error: string | null = null;
-
-    console.log(inputValue);
 
     // Verificando se os campos estão vazios
     if (!description || description.trim() === "") {
@@ -176,7 +181,8 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
       ...(barCode && { bar_code: parseInt(barCode) }),
       ncm: ncm,
       ...(exNcm && { ex_ncm: parseInt(exNcm) }),
-      ...(cestId && { cestId: parseInt(cestId) }),
+      cestId: parseInt(cestId),
+      //...(cestId && { cestId: parseInt(cestId) }),
       ...(price && { price: parseFloat(price) }),
       ...(groupId && { group: parseInt(groupId) }),
       ...(subGroupId && { sub_group: parseInt(subGroupId) }),
@@ -190,7 +196,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     console.log("Formulário enviado com sucesso!", dataForm);
 
     try {
-      const response = await fetch("http://26.56.52.76:8000/postproducts", {
+      const response = await fetch("http://26.56.52.76:8000/product", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -293,20 +299,37 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     }
   }, [addProductFlag, resetFlags, handleAddProduct]);
 
- 
-  // Função para lidar com a mudança no input de busca
-  const handleInputChangeSC = (value: string) => {
-    setInputValue(value); // Atualiza o valor de busca no componente pai
+  // Função para lidar com a mudança no input de busca ncm
+  const handleInputChangeNcm = (value: string) => {
+    setInputValueNcm(value); // Atualiza o valor de busca no componente pai
   };
 
   // Função para lidar com a seleção do NCM
-  const handleSelectChangeNcm = (selected: { label: string; value: string } | null) => {
-    
+  const handleSelectChangeNcm = (
+    selected: { label: string; value: string } | null
+  ) => {
     if (selected) {
-      console.log('Selecionado no Pai:', selected);
+      console.log("Selecionado no Pai:", selected);
       setNcm(selected.value); // Atualiza o valor de ncm com o valor da seleção
     } else {
-      setNcm("");  // Se nada for selecionado, limpa o valor de ncm
+      setNcm(""); // Se nada for selecionado, limpa o valor de ncm
+    }
+  };
+
+  // Função para lidar com a mudança no input de busca CEST
+  const handleInputChangeCEST = (value: string) => {
+    setInputValueCest(value); // Atualiza o valor de busca no componente pai
+  };
+
+  // Função para lidar com a seleção do NCM
+  const handleSelectChangeCEST = (
+    selected: { label: string; value: string } | null
+  ) => {
+    if (selected) {
+      console.log("Selecionado no Pai:", selected);
+      setCestId(selected.value); // Atualiza o valor de ncm com o valor da seleção
+    } else {
+      setCestId(""); // Se nada for selecionado, limpa o valor de ncm
     }
   };
 
@@ -377,11 +400,13 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                 NCM<span style={{ color: "red" }}>*</span>
               </label>
               <div className={styles.divInputIcon}>
-                <SearchSelect
-                  inputValue={ncm} // Usar ncm diretamente em vez de inputValue
-                  onInputChange={handleInputChangeSC}
-                  onSelectChange={handleSelectChangeNcm}
-                />
+                <div>
+                  <SearchSelectNcm
+                    inputValue={ncm} // Usar ncm diretamente em vez de inputValue
+                    onInputChange={handleInputChangeNcm}
+                    onSelectChange={handleSelectChangeNcm}
+                  />
+                </div>
                 <Image
                   src={"icons/search-input-icon.svg"}
                   width={20}
@@ -405,16 +430,13 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
             <div className={styles.inputWrapContainer}>
               <label>Código CEST</label>
               <div className={styles.divInputIcon}>
-                <select
-                  value={cestId || ""}
-                  onChange={(e) => setCestId(e.target.value)}
-                  className={styles.cestIdInput}
-                >
-                  <option value="">Selecione</option>
-                  <option value="1232145">1232145</option>
-                  <option value="1235214">1235214</option>
-                  <option value="6523145">6523145</option>
-                </select>
+                <div className={styles.divSpecialSelect}>
+                  <SearchSelectCest
+                    inputValue={cestId} // Usar ncm diretamente em vez de inputValue
+                    onInputChange={handleInputChangeCEST}
+                    onSelectChange={handleSelectChangeCEST}
+                  />
+                </div>
                 <Image
                   src={"icons/search-input-icon.svg"}
                   width={20}

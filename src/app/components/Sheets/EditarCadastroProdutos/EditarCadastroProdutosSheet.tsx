@@ -86,10 +86,10 @@ const EditarCadastroProdutosSheet: React.FC<
         // Realiza as três requisições em paralelo usando Promise.all
         const [responseUnity, responseGroups, responseProductEdit] =
           await Promise.all([
-            fetch("http://26.56.52.76:8000/getunitytypes"),
-            fetch("http://26.56.52.76:8000/getgroups"),
+            fetch("http://26.56.52.76:8000/unitytype"),
+            fetch("http://26.56.52.76:8000/group"),
             fetch(
-              `http://26.56.52.76:8000/getproducts?limit=1&page=1&id=${idForEdit}`
+              `http://26.56.52.76:8000/product?limit=1&page=1&id=${idForEdit}`
             ),
           ]);
 
@@ -244,7 +244,7 @@ const EditarCadastroProdutosSheet: React.FC<
   const handleSubGroups = async (id: number) => {
     try {
       const response = await fetch(
-        `http://26.56.52.76:8000/getsubgroups?groupsId=${id}`
+        `http://26.56.52.76:8000/subgroup?groupsId=${id}`
       );
 
       const data = await response.json();

@@ -116,7 +116,7 @@ const TableData: React.FC<TableDataProps> = ({
     const fetchProducts = async () => {
       const res = await fetch(
         //Esconder url da api futuramente
-        `http://26.56.52.76:8000/getproducts?limit=${ITEMS_PER_PAGE}&page=${
+        `http://26.56.52.76:8000/product?limit=${ITEMS_PER_PAGE}&page=${
           currentPage + 1
         }`
       );
@@ -184,7 +184,7 @@ const TableData: React.FC<TableDataProps> = ({
 
     //Req Delete
     try {
-      const res = await fetch("http://26.56.52.76:8000//deleteproducts", {
+      const res = await fetch("http://26.56.52.76:8000/product", {
         method: "DELETE", // Usando POST para enviar os dados
         headers: {
           "Content-Type": "application/json",
@@ -215,7 +215,7 @@ const TableData: React.FC<TableDataProps> = ({
   const fetchProductsDeleted = async () => {
     const res = await fetch(
       //Esconder url da api futuramente
-      `http://26.56.52.76:8000/getproducts?limit=${ITEMS_PER_PAGE}&page=${
+      `http://26.56.52.76:8000/product?limit=${ITEMS_PER_PAGE}&page=${
         currentPage + 1
       }`
     );
@@ -252,7 +252,7 @@ const TableData: React.FC<TableDataProps> = ({
     try {
       const res = await fetch(
         //Esconder url da api futuramente
-        `http://26.56.52.76:8000/getproducts?limit=${ITEMS_PER_PAGE}&page=${
+        `http://26.56.52.76:8000/product?limit=${ITEMS_PER_PAGE}&page=${
           currentPage + 1
         }&field=${field}&filter=${searchTerm}`
       );
