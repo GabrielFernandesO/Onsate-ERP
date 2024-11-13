@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
-import Select from 'react-select';
-import debounce from 'lodash/debounce';
-import styles from './SearchSelect.module.css'
+import { useState, useCallback } from "react";
+import Downshift from "downshift";
+import debounce from "lodash/debounce";
+import styles from "./SearchSelect.module.css";
 
 // Tipando as opções do select
 interface Option {
@@ -15,11 +15,13 @@ interface SearchSelectProps {
   onSelectChange: (selected: { label: string; value: string } | null) => void; // Função para passar a opção selecionada
 }
 
-const SearchSelectCest = ({  onInputChange, onSelectChange }: SearchSelectProps) => {
+const SearchSelectNcm = ({
+  inputValue,
+  onInputChange,
+  onSelectChange,
+}: SearchSelectProps) => {
   const [options, setOptions] = useState<Option[]>([]); // Opções de busca
   const [loading, setLoading] = useState<boolean>(false); // Estado de carregamento
-  const [selectedOption, setSelectedOption] = useState<Option | null>(null); // Estado para a opção selecionada
-
 
   // Função para carregar as opções com debounce
   const loadOptions = async (query: string) => {
@@ -31,26 +33,26 @@ const SearchSelectCest = ({  onInputChange, onSelectChange }: SearchSelectProps)
     setLoading(true);
     try {
       // Requisição de dados ao backend
-      const response = await fetch(`http://26.56.52.76:8000/cestcode?cestfilter=${query}`);
+      const response = await fetch(
+        `http://26.56.52.76:8000/cestcode?cestfilter=${query}`
+      );
       if (!response.ok) {
-        throw new Error('Erro ao buscar as opções');
+        throw new Error("Erro ao buscar as opções");
       }
 
       const data = await response.json();
-      const formattedOptions = data.map((item: { id: string }) => ({
-        label: `Cest: ${item}`,
+      const formattedOptions = data.map((item: number) => ({
+        label: item,
         value: item,
       }));
 
       setOptions(formattedOptions);
     } catch (error) {
-      console.error('Erro ao buscar as opções:', error);
+      console.error("Erro ao buscar as opções:", error);
     } finally {
       setLoading(false);
     }
   };
-
-
 
   // Debounced search
   const debouncedSearch = useCallback(
@@ -62,31 +64,92 @@ const SearchSelectCest = ({  onInputChange, onSelectChange }: SearchSelectProps)
 
   // Função que é chamada toda vez que o usuário digita
   const handleInputChange = (newValue: string) => {
-    onInputChange(newValue);  // Atualizando o estado no componente pai
+    onInputChange(newValue); // Atualizando o estado no componente pai
     debouncedSearch(newValue); // Chama a versão debounced
   };
 
   // Função que é chamada quando o usuário seleciona uma opção
   const handleSelectChange = (selectedOption: Option | null) => {
-    setSelectedOption(selectedOption); // Atualiza o estado local do select
     onSelectChange(selectedOption); // Passa a opção selecionada para o componente pai
+  };
+
+  // Função para limpar a seleção
+  const handleClearSelection = () => {
+    onSelectChange(null); // Limpa a seleção
+    onInputChange(""); // Limpa o valor do input
+  };
+
+  //Deixa apenas numeros no input text
+  const handleInputNumber = (e: React.FormEvent<HTMLInputElement>): void => {
+    const target = e.target as HTMLInputElement;
+    target.value = target.value.replace(/\D/g, ""); // Remove qualquer coisa que não seja número
   };
 
   return (
     <div className={styles.divSelect}>
-      <Select
-        options={options}
-        value={selectedOption} // Sincronizando o valor selecionado com o estado local
-        onChange={handleSelectChange} // Passando a função de onChange para capturar a seleção
-        onInputChange={handleInputChange} // Chama o handleInputChange para realizar a busca
-        isLoading={loading}
-        isClearable={true}
-        placeholder="CEST"
-        className="basic-single"
-        classNamePrefix="select"
-      />
+      <Downshift
+        inputValue={inputValue} // Passando o inputValue do pai para o Downshift
+        onInputValueChange={handleInputChange}
+        onSelect={handleSelectChange}
+        itemToString={(item) => (item ? item.label : "")}
+      >
+        {({
+          getInputProps,
+          getItemProps,
+          isOpen,
+          highlightedIndex,
+          selectedItem,
+          inputValue,
+        }) => (
+          <div>
+            <div className={styles.inputWrapper}>
+              <input
+                {...getInputProps()}
+                value={inputValue ? inputValue : ""} // Controle do valor do input diretamente pelo estado
+                placeholder="CEST"
+                className={styles.input}
+                onInput={handleInputNumber}
+              />
+              {/* Botão para limpar a seleção */}
+              {inputValue !== "" && selectedItem && (
+                <button
+                  type="button"
+                  onClick={handleClearSelection}
+                  className={styles.clearButton}
+                >
+                  Limpar
+                </button>
+              )}
+            </div>
+            {isOpen && (
+              <ul className={styles.suggestionsList}>
+                {loading && <li>Carregando...</li>}
+                {options.length === 0 && !loading && inputValue && (
+                  <li>Nenhuma opção encontrada</li>
+                )}
+                {options.map((item, index) => (
+                  <li
+                    key={item.value}
+                    {...getItemProps({
+                      index,
+                      item,
+                      style: {
+                        backgroundColor:
+                          highlightedIndex === index ? "#bde4ff" : "#fff",
+                        fontWeight: selectedItem === item ? "bold" : "normal",
+                      },
+                    })}
+                  >
+                    {item.label}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </Downshift>
     </div>
   );
 };
 
-export default SearchSelectCest;
+export default SearchSelectNcm;

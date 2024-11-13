@@ -458,7 +458,7 @@ const EditarCadastroProdutosSheet: React.FC<
                   disabled={true}
                   className={styles.groupInput}
                 >
-                  <option value={dataGetProduct.length > 0 ? dataGetProduct[0].Group.name : ""}>{dataGetProduct.length > 0 ? dataGetProduct[0].Group.name : ""}</option>
+                  <option value={dataGetProduct.length > 0 ? (dataGetProduct[0].Group.name ? dataGetProduct[0].Group.name : "" ): ""}>{dataGetProduct.length > 0 ?  (dataGetProduct[0].Group.name ? dataGetProduct[0].Group.name : "" ) : ""}</option>
                   {groupSelect.map((group) => (
                     <option key={group.id} value={group.id}>
                       {group.name}
@@ -483,7 +483,7 @@ const EditarCadastroProdutosSheet: React.FC<
                   disabled = {true}
                   className={styles.subGroupInput}
                 >
-                  <option value={dataGetProduct.length > 0 ? dataGetProduct[0].SubGroup.name : ""}>{dataGetProduct.length > 0 ? dataGetProduct[0].SubGroup.name : ""}</option>
+                  <option value={dataGetProduct.length > 0 ? (dataGetProduct[0].SubGroup.name ? dataGetProduct[0].SubGroup.name  : "") : ""}>{dataGetProduct.length > 0 ? (dataGetProduct[0].SubGroup.name ? dataGetProduct[0].SubGroup.name  : "") : ""}</option>
                   {subGroupSelect.map((subroup) => (
                     <option key={subroup.id} value={subroup.id}>
                       {subroup.name}

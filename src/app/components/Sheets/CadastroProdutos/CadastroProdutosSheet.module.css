@@ -8,12 +8,8 @@
   flex-direction: column;
 }
 
-.formContainer form button {
-  margin-top: 20px;
-}
-
 .firstLineInput {
-  margin-bottom: 30px;
+  margin-bottom: 65px;
   display: flex;
   flex-direction: column;
 }
@@ -22,7 +18,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 40px;
+  margin-bottom: 70px;
 }
 
 .secondLineInputs div {

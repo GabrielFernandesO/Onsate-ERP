@@ -68,8 +68,11 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const [groupSelect, setGroupSelect] = useState<selectType[]>([]);
   const [subGroupSelect, setSubGroupSelect] = useState<selectType[]>([]);
 
+  //Select que filtra dados no backend
   const [, setInputValueNcm] = useState<string>("");
-  const [, setInputValueCest] = useState<string>("");
+  const [, setSelectedOptionNcm] = useState<string | null>(null);
+  const [, setSelectedOptionCest] = useState<string | null>(null);
+
 
   //DAdos para preencher o select que vem do banco
   useEffect(() => {
@@ -301,37 +304,44 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
 
   // Função para lidar com a mudança no input de busca ncm
   const handleInputChangeNcm = (value: string) => {
-    setInputValueNcm(value); // Atualiza o valor de busca no componente pai
+    setNcm(value); // Atualiza o valor de busca no componente pai
   };
 
   // Função para lidar com a seleção do NCM
+  // Função chamada quando uma opção é selecionada
   const handleSelectChangeNcm = (
     selected: { label: string; value: string } | null
   ) => {
     if (selected) {
-      console.log("Selecionado no Pai:", selected);
-      setNcm(selected.value); // Atualiza o valor de ncm com o valor da seleção
-    } else {
-      setNcm(""); // Se nada for selecionado, limpa o valor de ncm
+      setSelectedOptionNcm(selected.value);
+    }
+
+    if (!selected) {
+      setNcm("");
+      setSelectedOptionNcm(""); // Limpa o valor do input quando a seleção for desfeita
     }
   };
 
-  // Função para lidar com a mudança no input de busca CEST
-  const handleInputChangeCEST = (value: string) => {
-    setInputValueCest(value); // Atualiza o valor de busca no componente pai
+   // Função para lidar com a mudança no input de busca cest
+   const handleInputChangeCEST = (value: string) => {
+    setCestId(value); // Atualiza o valor de busca no componente pai
   };
 
-  // Função para lidar com a seleção do NCM
+  // Função para lidar com a seleção do CEST
+  // Função chamada quando uma opção é selecionada
   const handleSelectChangeCEST = (
     selected: { label: string; value: string } | null
   ) => {
     if (selected) {
-      console.log("Selecionado no Pai:", selected);
-      setCestId(selected.value); // Atualiza o valor de ncm com o valor da seleção
-    } else {
-      setCestId(""); // Se nada for selecionado, limpa o valor de ncm
+      setSelectedOptionCest(selected.value);
+    }
+
+    if (!selected) {
+      setCestId("");
+      setSelectedOptionCest(""); // Limpa o valor do input quando a seleção for desfeita
     }
   };
+
 
   return (
     <main className={styles.main}>
@@ -386,7 +396,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
               <label>Código de barras</label>
               <input
                 type="text"
-                value={barCode || 0}
+                value={barCode || ""}
                 onChange={(e) => setBarCode(e.target.value)}
                 maxLength={13}
                 placeholder="ex: 1698189354175"
