@@ -13,12 +13,14 @@ interface SearchSelectProps {
   inputValue: string;
   onInputChange: (value: string) => void;
   onSelectChange: (selected: { label: string; value: string } | null) => void; // Função para passar a opção selecionada
+  disabled: boolean
 }
 
 const SearchSelectNcm = ({
   inputValue,
   onInputChange,
   onSelectChange,
+  disabled
 }: SearchSelectProps) => {
   const [options, setOptions] = useState<Option[]>([]); // Opções de busca
   const [loading, setLoading] = useState<boolean>(false); // Estado de carregamento
@@ -109,6 +111,7 @@ const SearchSelectNcm = ({
                 placeholder="NCM"
                 className={styles.input}
                 onInput={handleInputNumber}
+                disabled={disabled}
               />
               {/* Botão para limpar a seleção */}
               {(inputValue !== "" && selectedItem) && (

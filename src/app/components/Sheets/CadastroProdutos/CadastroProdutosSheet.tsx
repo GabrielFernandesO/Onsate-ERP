@@ -184,7 +184,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
       ...(barCode && { bar_code: parseInt(barCode) }),
       ncm: ncm,
       ...(exNcm && { ex_ncm: parseInt(exNcm) }),
-      cestId: parseInt(cestId),
+      cest_code: cestId,
       //...(cestId && { cestId: parseInt(cestId) }),
       ...(price && { price: parseFloat(price) }),
       ...(groupId && { group: parseInt(groupId) }),
@@ -415,6 +415,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                     inputValue={ncm} // Usar ncm diretamente em vez de inputValue
                     onInputChange={handleInputChangeNcm}
                     onSelectChange={handleSelectChangeNcm}
+                    disabled={false}
                   />
                 </div>
                 <Image
@@ -445,6 +446,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                     inputValue={cestId} // Usar ncm diretamente em vez de inputValue
                     onInputChange={handleInputChangeCEST}
                     onSelectChange={handleSelectChangeCEST}
+                    disabled={false}
                   />
                 </div>
                 <Image

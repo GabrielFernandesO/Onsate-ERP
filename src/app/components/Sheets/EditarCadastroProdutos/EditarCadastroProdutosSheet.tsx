@@ -7,6 +7,8 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { idEditAtom } from "../../TableData/TableData";
+import SearchSelectNcm from "../../SearchSelect/SearchSelectNCM";
+import SearchSelectCest from "../../SearchSelect/SearchSelectCest";
 
 interface EditarCadastroProdutosSheetProps {
   clearFormFlag: boolean;
@@ -57,27 +59,38 @@ const EditarCadastroProdutosSheet: React.FC<
 }) => {
   // Usando os átomos com useAtom para obter e definir o estado
   const [dataGetProduct, setDataGetProduct] = useState<GetProductID[]>([]);
-  const [description, setDescription] = useState<string | null>("");
-  const [unityType, setUnityType] = useState<string | null>("");
-  const [barCode, setBarCode] = useState<string | null>("");
-  const [ncm, setNcm] = useState<string | null>("");
-  const [exNcm, setExNcm] = useState<string | null>("");
-  const [cestId, setCestId] = useState<string | null>("");
-  const [price, setPrice] = useState<string | null>(null);
-  const [groupId, setGroupId] = useState<string | null>(null);
-  const [subGroupId, setSubGroupId] = useState<string | null>(null);
-  const [reservedStock, setReservedStock] = useState<string | null>(null);
-  const [stock, setStock] = useState<string | null>(null);
-  const [grossWeight, setGrossWeight] = useState<string | null>(null);
-  const [liquidWeight, setLiquidWeight] = useState<string | null>(null);
+  const [description, setDescription] = useState<string>("");
+  const [unityType, setUnityType] = useState<string>("");
+  const [barCode, setBarCode] = useState<string>("");
+  const [ncm, setNcm] = useState<string>("");
+  const [exNcm, setExNcm] = useState<string>("");
+  const [cestId, setCestId] = useState<string>("");
+  const [price, setPrice] = useState<string>("");
+  const [groupId, setGroupId] = useState<string>("");
+  const [subGroupId, setSubGroupId] = useState<string>("");
+  const [reservedStock, setReservedStock] = useState<string>("");
+  const [stock, setStock] = useState<string>("");
+  const [grossWeight, setGrossWeight] = useState<string>("");
+  const [liquidWeight, setLiquidWeight] = useState<string>("");
   // Estado de mensagens de erro
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>("");
   //ID Edit Cadastro
   const [idForEdit] = useAtom(idEditAtom);
 
+  //Variaveis para lidar com o Button de Habilitar Edição
+  const [editionButtonText, setEditionButtonText] =
+    useState<string>("Habilitar Edição");
+  const [ableForEdit, setAbleForEdit] = useState<boolean>(true);
+
+  //Variaveis para os selects com options no db
   const [unitySelect, setUnitySelect] = useState<selectType[]>([]);
   const [groupSelect, setGroupSelect] = useState<selectType[]>([]);
   const [subGroupSelect, setSubGroupSelect] = useState<selectType[]>([]);
+
+  //Select que filtra dados no backend
+  const [, setInputValueNcm] = useState<string>("");
+  const [, setSelectedOptionNcm] = useState<string | null>(null);
+  const [, setSelectedOptionCest] = useState<string | null>(null);
 
   useEffect(() => {
     // Função para buscar os dados
@@ -112,6 +125,24 @@ const EditarCadastroProdutosSheet: React.FC<
         setGroupSelect(dataGroup);
         setDataGetProduct(dataProduct.products);
 
+        //Encurtar sintaxe do set das propriedades abaixo
+        const product = dataProduct.products[0];
+
+        //Inicia as variaveis com os valores encontrados do produto
+        setDescription(product.description || "");
+        setUnityType(product.unityTypeId || "");
+        setBarCode(product.bar_code || "");
+        setNcm(product.ncmId || "");
+        setExNcm(product.ex_ncm || "");
+        setCestId(product.cestId || "");
+        setPrice(product.price || "");
+        setGroupId(product.groupId || "");
+        setSubGroupId(product.subGroupId || "");
+        setReservedStock(product.reserved_stock || "");
+        setStock(product.stock || "");
+        setGrossWeight(product.gross_weight || "");
+        setLiquidWeight(product.liquid_weight || "");
+
         console.log("Product edit", dataProduct.products);
 
         console.log(dataGroup, "Aqui");
@@ -127,21 +158,25 @@ const EditarCadastroProdutosSheet: React.FC<
   const resetForm = () => {
     setDescription("");
     setUnityType("");
-    setBarCode(null);
+    setBarCode("");
     setNcm("");
-    setExNcm(null);
+    setExNcm("");
     setCestId("");
-    setPrice(null);
-    setGroupId(null);
-    setSubGroupId(null);
-    setReservedStock(null);
-    setStock(null);
-    setGrossWeight(null);
-    setLiquidWeight(null);
+    setPrice("");
+    setGroupId("");
+    setSubGroupId("");
+    setReservedStock("");
+    setStock("");
+    setGrossWeight("");
+    setLiquidWeight("");
+    setInputValueNcm("");
   };
 
   //Function para enviar os dados para o backend
   const handleSubmit = async () => {
+    console.log(unityType);
+    console.log(description);
+
     /* 
     let error: string | null = null; */
 
@@ -216,10 +251,10 @@ const EditarCadastroProdutosSheet: React.FC<
 
   // Função para limpar a mensagem de erro quando o usuário começar a digitar (Input)
   const handleInputChange = (
-    setter: React.Dispatch<React.SetStateAction<string | null>>
+    setter: React.Dispatch<React.SetStateAction<string>>
   ) => {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
-      setter(e.target.value || null); // Atualiza o valor ou atribui null caso esteja vazio
+      setter(e.target.value); // Atualiza o valor ou atribui null caso esteja vazio
       setErrorMessage(null); // Limpa a mensagem de erro ao digitar
     };
   };
@@ -232,10 +267,10 @@ const EditarCadastroProdutosSheet: React.FC<
 
   // Função para limpar a mensagem de erro quando o usuário começar a digitar (Select)
   const handleSelectChange = (
-    setter: React.Dispatch<React.SetStateAction<string | null>>
+    setter: React.Dispatch<React.SetStateAction<string>>
   ) => {
     return (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setter(e.target.value || null); // Atualiza o valor ou atribui null caso esteja vazio
+      setter(e.target.value); // Atualiza o valor ou atribui null caso esteja vazio
       setErrorMessage(null); // Limpa a mensagem de erro ao selecionar
     };
   };
@@ -263,10 +298,10 @@ const EditarCadastroProdutosSheet: React.FC<
   };
 
   const handleSelectChangeGroup = (
-    setter: React.Dispatch<React.SetStateAction<string | null>>
+    setter: React.Dispatch<React.SetStateAction<string>>
   ) => {
     return (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setter(e.target.value || null); // Atualiza o valor ou atribui null caso esteja vazio
+      setter(e.target.value); // Atualiza o valor ou atribui null caso esteja vazio
       setErrorMessage(null); // Limpa a mensagem de erro ao selecionar
       handleSubGroups(parseInt(e.target.value));
     };
@@ -289,6 +324,58 @@ const EditarCadastroProdutosSheet: React.FC<
     }
   }, [addProductFlag, resetFlags, handleAddProduct]);
 
+  const handleEditionButton = () => {
+    setAbleForEdit(!ableForEdit);
+
+    if (ableForEdit == true) {
+      setEditionButtonText("Desabilitar Edição");
+    } else {
+      setEditionButtonText("Habilitar Edição");
+    }
+  };
+
+
+    // Função para lidar com a mudança no input de busca ncm
+    const handleInputChangeNcm = (value: string) => {
+      setNcm(value); // Atualiza o valor de busca no componente pai
+    };
+  
+    // Função para lidar com a seleção do NCM
+    // Função chamada quando uma opção é selecionada
+    const handleSelectChangeNcm = (
+      selected: { label: string; value: string } | null
+    ) => {
+      if (selected) {
+        setSelectedOptionNcm(selected.value);
+      }
+  
+      if (!selected) {
+        setNcm("");
+        setSelectedOptionNcm(""); // Limpa o valor do input quando a seleção for desfeita
+      }
+    };
+  
+     // Função para lidar com a mudança no input de busca cest
+     const handleInputChangeCEST = (value: string) => {
+      setCestId(value); // Atualiza o valor de busca no componente pai
+    };
+  
+    // Função para lidar com a seleção do CEST
+    // Função chamada quando uma opção é selecionada
+    const handleSelectChangeCEST = (
+      selected: { label: string; value: string } | null
+    ) => {
+      if (selected) {
+        setSelectedOptionCest(selected.value);
+      }
+  
+      if (!selected) {
+        setCestId("");
+        setSelectedOptionCest(""); // Limpa o valor do input quando a seleção for desfeita
+      }
+    };
+  
+
   return (
     <main className={styles.main}>
       <div className={styles.formContainer}>
@@ -309,12 +396,10 @@ const EditarCadastroProdutosSheet: React.FC<
               </label>
               <input
                 type="text"
-                value={
-                  description || dataGetProduct.length > 0 ? dataGetProduct[0].description : ""
-                }
+                value={description}
                 onChange={handleInputChange(setDescription)}
                 maxLength={100}
-                disabled={true}
+                disabled={ableForEdit}
               />
             </div>
           </div>
@@ -326,21 +411,15 @@ const EditarCadastroProdutosSheet: React.FC<
               </label>
               <div className={styles.divInputIcon}>
                 <select
-                  value={unityType || ""}
+                  value={unityType}
                   onChange={handleSelectChange(setUnityType)}
                   className={styles.unityInput}
-                  disabled={true}
+                  disabled={ableForEdit}
                 >
                   <option
-                    value={
-                      dataGetProduct.length > 0
-                        ? dataGetProduct[0].unityTypeId
-                        : ""
-                    }
+                    value={unityType || dataGetProduct?.[0]?.unityTypeId || ""}
                   >
-                    {dataGetProduct.length > 0
-                      ? dataGetProduct[0].unityTypeId
-                      : unityType}
+                    {unityType || dataGetProduct?.[0]?.unityTypeId || ""}
                   </option>
                   {unitySelect.map((unity) => (
                     <option key={unity.name} value={unity.name}>
@@ -361,12 +440,12 @@ const EditarCadastroProdutosSheet: React.FC<
               <label>Código de barras</label>
               <input
                 type="text"
-                value={barCode || dataGetProduct.length > 0 ? dataGetProduct[0].bar_code : ""}
+                value={barCode}
                 onChange={(e) => setBarCode(e.target.value)}
                 maxLength={13}
                 onInput={handleInputNumber}
                 className={styles.barCodeInput}
-                disabled={true}
+                disabled={ableForEdit}
               />
             </div>
 
@@ -375,17 +454,14 @@ const EditarCadastroProdutosSheet: React.FC<
                 NCM<span style={{ color: "red" }}>*</span>
               </label>
               <div className={styles.divInputIcon}>
-                <select
-                  value={ncm || ""}
-                  onChange={handleSelectChange(setNcm)}
-                  className={styles.ncmInput}
-                  disabled={true}
-                >
-                  <option value={dataGetProduct.length > 0 ? dataGetProduct[0].ncmId : ""}>{dataGetProduct.length > 0 ? dataGetProduct[0].ncmId : ""}</option>
-                  <option value="12345678">12345678</option>
-                  <option value="12345665">12345665</option>
-                  <option value="12343278">12343278</option>
-                </select>
+              <div>
+                  <SearchSelectNcm
+                    inputValue={ncm} // Usar ncm diretamente em vez de inputValue
+                    onInputChange={handleInputChangeNcm}
+                    onSelectChange={handleSelectChangeNcm}
+                    disabled={ableForEdit}
+                  />
+                </div>
                 <Image
                   src={"icons/search-input-icon.svg"}
                   width={20}
@@ -399,29 +475,26 @@ const EditarCadastroProdutosSheet: React.FC<
               <label>EX NCM</label>
               <input
                 type="text"
-                value={exNcm || dataGetProduct.length > 0 ? dataGetProduct[0].ex_ncm : ""}
+                value={exNcm}
                 onChange={(e) => setExNcm(e.target.value)}
                 maxLength={4}
                 onInput={handleInputNumber}
                 className={styles.ex_ncmInput}
-                disabled
+                disabled={ableForEdit}
               />
             </div>
 
             <div className={styles.inputWrapContainer}>
               <label>Código CEST</label>
               <div className={styles.divInputIcon}>
-                <select
-                  value={cestId || ""}
-                  onChange={(e) => setCestId(e.target.value)}
-                  className={styles.cestIdInput}
-                  disabled = {true}
-                >
-                  <option value={dataGetProduct.length > 0 ? dataGetProduct[0].cestId : ""}>{dataGetProduct.length > 0 ? dataGetProduct[0].cestId : ""}</option>
-                  <option value="1232145">1232145</option>
-                  <option value="1235214">1235214</option>
-                  <option value="6523145">6523145</option>
-                </select>
+              <div className={styles.divSpecialSelect}>
+                  <SearchSelectCest
+                    inputValue={cestId} // Usar ncm diretamente em vez de inputValue
+                    onInputChange={handleInputChangeCEST}
+                    onSelectChange={handleSelectChangeCEST}
+                    disabled={ableForEdit}
+                  />
+                </div>
                 <Image
                   src={"icons/search-input-icon.svg"}
                   width={20}
@@ -437,12 +510,12 @@ const EditarCadastroProdutosSheet: React.FC<
               </label>
               <input
                 type="text"
-                value={price || dataGetProduct.length > 0 ? dataGetProduct[0].price : ""}
+                value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="ex: 250"
                 onInput={handleInputNumber}
                 className={styles.priceInput}
-                disabled={true}
+                disabled={ableForEdit}
               />
             </div>
           </div>
@@ -453,12 +526,14 @@ const EditarCadastroProdutosSheet: React.FC<
               <div className={styles.divInputIcon}>
                 {" "}
                 <select
-                  value={groupId || ""}
+                  value={groupId}
                   onChange={handleSelectChangeGroup(setGroupId)}
-                  disabled={true}
+                  disabled={ableForEdit}
                   className={styles.groupInput}
                 >
-                  <option value={dataGetProduct.length > 0 ? (dataGetProduct[0].Group.name ? dataGetProduct[0].Group.name : "" ): ""}>{dataGetProduct.length > 0 ?  (dataGetProduct[0].Group.name ? dataGetProduct[0].Group.name : "" ) : ""}</option>
+                  <option value={dataGetProduct?.[0]?.Group?.name || ""}>
+                    {dataGetProduct?.[0]?.Group?.name || "Selecione"}
+                  </option>
                   {groupSelect.map((group) => (
                     <option key={group.id} value={group.id}>
                       {group.name}
@@ -478,12 +553,14 @@ const EditarCadastroProdutosSheet: React.FC<
               <label>Sub grupo</label>
               <div className={styles.divInputIcon}>
                 <select
-                  value={subGroupId || ""}
+                  value={subGroupId}
                   onChange={handleSelectChangeGroup(setSubGroupId)}
-                  disabled = {true}
+                  disabled={ableForEdit}
                   className={styles.subGroupInput}
                 >
-                  <option value={dataGetProduct.length > 0 ? (dataGetProduct[0].SubGroup.name ? dataGetProduct[0].SubGroup.name  : "") : ""}>{dataGetProduct.length > 0 ? (dataGetProduct[0].SubGroup.name ? dataGetProduct[0].SubGroup.name  : "") : ""}</option>
+                  <option value={dataGetProduct?.[0]?.SubGroup?.name || ""}>
+                    {dataGetProduct?.[0]?.SubGroup?.name || "Selecione"}
+                  </option>
                   {subGroupSelect.map((subroup) => (
                     <option key={subroup.id} value={subroup.id}>
                       {subroup.name}
@@ -503,10 +580,10 @@ const EditarCadastroProdutosSheet: React.FC<
               <label>Estoque reservado</label>
               <input
                 type="text"
-                value={reservedStock || dataGetProduct.length > 0 ? dataGetProduct[0].reserved_stock : ""}
+                value={reservedStock}
                 onChange={(e) => setReservedStock(e.target.value)}
                 onInput={handleInputNumber}
-                disabled={true}
+                disabled={ableForEdit}
               />
             </div>
 
@@ -514,9 +591,9 @@ const EditarCadastroProdutosSheet: React.FC<
               <label>Estoque</label>
               <input
                 type="text"
-                value={stock || dataGetProduct.length > 0 ? dataGetProduct[0].stock : ""}
+                value={stock}
                 onChange={(e) => setStock(e.target.value)}
-                disabled={true}
+                disabled={ableForEdit}
                 onInput={handleInputNumber}
               />
             </div>
@@ -525,9 +602,9 @@ const EditarCadastroProdutosSheet: React.FC<
               <label>Peso Bruto</label>
               <input
                 type="text"
-                value={grossWeight ||dataGetProduct.length > 0 ? dataGetProduct[0].gross_weight: ""}
+                value={grossWeight}
                 onChange={(e) => setGrossWeight(e.target.value)}
-                disabled={true}
+                disabled={ableForEdit}
                 onInput={handleInputNumber}
               />
             </div>
@@ -536,15 +613,18 @@ const EditarCadastroProdutosSheet: React.FC<
               <label>Peso Líquido</label>
               <input
                 type="text"
-                value={liquidWeight || dataGetProduct.length > 0 ? dataGetProduct[0].liquid_weight : ""}
+                value={liquidWeight}
                 onChange={(e) => setLiquidWeight(e.target.value)}
-                disabled={true}
+                disabled={ableForEdit}
                 onInput={handleInputNumber}
               />
             </div>
             <div className={styles.adjustSpace}></div>
           </div>
         </form>
+        <div className={styles.editionButtonDiv}>
+          <button onClick={handleEditionButton}>{editionButtonText}</button>
+        </div>
       </div>
     </main>
   );
