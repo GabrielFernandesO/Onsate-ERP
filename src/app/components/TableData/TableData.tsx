@@ -7,7 +7,7 @@ import Image from "next/image";
 import debounce from "lodash/debounce";
 import { toast } from "react-toastify";
 import { atom, useAtom } from "jotai";
-
+import ModalAction from "../ModalAction/ModalAction";
 
 //Global Variables
 export const idEditAtom = atom<number | null>(null);
@@ -110,6 +110,10 @@ const TableData: React.FC<TableDataProps> = ({
   const [initialProducts, setInitialProducts] = useState<Products[]>([]);
   const [initialTotalPages, setInitialTotalPages] = useState<number>(0);
   const [, setIdForEdit] = useAtom(idEditAtom);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [textForModal, setTextForModal] = useState<string>(
+    "Deseja deletar os produtos selecionados?"
+  );
 
   //Req de busca de dados da tabela ao criar o componente
   useEffect(() => {
@@ -144,24 +148,23 @@ const TableData: React.FC<TableDataProps> = ({
   //Functio para enviar ao elemento pai o clique de renderizar a página de edit de produtos
   const toggleAddEditProduct = () => {
     const selectID = products
-    .filter((_, index) => selecteds[index]) // Filtra os produtos onde a seleção é true
-    .map((product) => product.id); // Mapeia para pegar os IDs dos produtos selecionados
-
+      .filter((_, index) => selecteds[index]) // Filtra os produtos onde a seleção é true
+      .map((product) => product.id); // Mapeia para pegar os IDs dos produtos selecionados
 
     //Validações para ir para a page de edição do produto
-    if(selectID.length == 0){
+    if (selectID.length == 0) {
       toast.info("Selecione um produto para editar.");
       return;
     }
 
-    if(selectID.length > 1){
-      toast.info("Somente um produto pode ser editado por vez.")
+    if (selectID.length > 1) {
+      toast.info("Somente um produto pode ser editado por vez.");
       return;
     }
 
-    console.log(selectID, "ID")
+    console.log(selectID, "ID");
     //Set ID FOR EDIT GLOBAL
-    setIdForEdit(selectID[0])
+    setIdForEdit(selectID[0]);
     handleEditProduct();
   };
 
@@ -339,8 +342,59 @@ const TableData: React.FC<TableDataProps> = ({
     };
   }, []);
 
+  //Lógica do Modal para deleção
+
+  const handleForDeleteProducts = () => {
+    //Verifica se a lista de items selecionados da tabela está vazia
+    //Para seguir cm a lógica
+
+    const selectedProductIds = products
+    .filter((_, index) => selecteds[index]) // Filtra os produtos onde a seleção é true
+    .map((product) => product.id); // Mapeia para pegar os IDs dos produtos selecionados
+
+
+    if (selectedProductIds.length === 0) {
+      toast.info("Nenhum produto selecionado para deletar.");
+      return;
+    }
+
+    //Seta o texto para o modal de acordo com a quantidade selecionada
+
+    if (selectedProductIds.length === 1) {
+      setTextForModal("Deseja deletar o produto selecionado?");
+      handleOpenModal();
+      return;
+    }
+
+    if(selectedProductIds.length > 1){
+      setTextForModal("Deseja deletar os produtos selecionados?");
+      handleOpenModal();
+      return;
+    }
+
+  };
+
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+
+  const handleConfirm = () => {
+    deleteProducts(); //Chama a function para deletar os produtos.
+    setIsModalOpen(false); // Fecha o modal após a confirmação
+  };
+  const handleCancel = () => {
+    setSelecteds([]); //Limpa a lsita de selecionados caso não queira deletar.
+    setIsModalOpen(false); // Fecha o modal após o cancelamento
+  };
+
   return (
     <main className={styles.main}>
+      <ModalAction
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+        text={textForModal}
+      />
       <div className={styles.controlList}>
         <div className={styles.inputSearch}>
           <svg
@@ -404,7 +458,7 @@ const TableData: React.FC<TableDataProps> = ({
               />
             </svg>
           </div>
-          <div className={styles.icon} onClick={deleteProducts}>
+          <div className={styles.icon} onClick={handleForDeleteProducts}>
             <svg
               width="24"
               height="24"

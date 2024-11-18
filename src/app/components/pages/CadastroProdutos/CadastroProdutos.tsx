@@ -79,7 +79,7 @@ export default function CadastroProdutos({
 
   // Função para limpar o formulário
   const handleClearForm = () => {
-    setClearFormFlag(true); // Atualiza o estado para sinalizar ao filho que ele deve limpar o formulário
+    setClearFormFlag(!clearFormFlag); // Atualiza o estado para sinalizar ao filho que ele deve limpar o formulário
   };
 
   // Função para adicionar o produto

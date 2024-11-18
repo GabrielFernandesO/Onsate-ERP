@@ -73,7 +73,6 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const [, setSelectedOptionNcm] = useState<string | null>(null);
   const [, setSelectedOptionCest] = useState<string | null>(null);
 
-
   //DAdos para preencher o select que vem do banco
   useEffect(() => {
     // Função para buscar os dados
@@ -322,8 +321,8 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     }
   };
 
-   // Função para lidar com a mudança no input de busca cest
-   const handleInputChangeCEST = (value: string) => {
+  // Função para lidar com a mudança no input de busca cest
+  const handleInputChangeCEST = (value: string) => {
     setCestId(value); // Atualiza o valor de busca no componente pai
   };
 
@@ -332,6 +331,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const handleSelectChangeCEST = (
     selected: { label: string; value: string } | null
   ) => {
+
     if (selected) {
       setSelectedOptionCest(selected.value);
     }
@@ -341,7 +341,6 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
       setSelectedOptionCest(""); // Limpa o valor do input quando a seleção for desfeita
     }
   };
-
 
   return (
     <main className={styles.main}>
@@ -416,6 +415,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                     onInputChange={handleInputChangeNcm}
                     onSelectChange={handleSelectChangeNcm}
                     disabled={false}
+                    able={false}
                   />
                 </div>
                 <Image
@@ -447,6 +447,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                     onInputChange={handleInputChangeCEST}
                     onSelectChange={handleSelectChangeCEST}
                     disabled={false}
+                    able={false}
                   />
                 </div>
                 <Image

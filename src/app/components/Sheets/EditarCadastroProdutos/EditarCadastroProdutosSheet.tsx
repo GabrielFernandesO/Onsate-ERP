@@ -68,6 +68,7 @@ const EditarCadastroProdutosSheet: React.FC<
   const [price, setPrice] = useState<string>("");
   const [groupId, setGroupId] = useState<string>("");
   const [subGroupId, setSubGroupId] = useState<string>("");
+  const [subGroupName, setSubGroupName] = useState<string>("");
   const [reservedStock, setReservedStock] = useState<string>("");
   const [stock, setStock] = useState<string>("");
   const [grossWeight, setGrossWeight] = useState<string>("");
@@ -138,6 +139,7 @@ const EditarCadastroProdutosSheet: React.FC<
         setPrice(product.price || "");
         setGroupId(product.groupId || "");
         setSubGroupId(product.subGroupId || "");
+        setSubGroupName(product.SubGroup?.name);
         setReservedStock(product.reserved_stock || "");
         setStock(product.stock || "");
         setGrossWeight(product.gross_weight || "");
@@ -157,96 +159,100 @@ const EditarCadastroProdutosSheet: React.FC<
   //Function para resetar os valores quando o form é enviado
   const resetForm = () => {
     setDescription("");
-    setUnityType("");
+    setUnityType("Selecione");
     setBarCode("");
     setNcm("");
     setExNcm("");
     setCestId("");
     setPrice("");
-    setGroupId("");
-    setSubGroupId("");
+    setGroupId("Selecione");
+    setSubGroupId("Selecione");
+    setSubGroupName("");
     setReservedStock("");
-    setStock("");
     setGrossWeight("");
     setLiquidWeight("");
     setInputValueNcm("");
   };
 
   //Function para enviar os dados para o backend
-  const handleSubmit = async () => {
-    console.log(unityType);
-    console.log(description);
+  const handleSubmit = async (e: React.FormEvent) => {
+    // Previne o comportamento padrão de envio do formulário
+    e.preventDefault();
 
-    /* 
-    let error: string | null = null; */
+    if (ableForEdit) {
+      toast.info("Habilite a edição para salvar.");
+      return;
+    }
+
+    let error: string | null = null;
 
     // Verificando se os campos estão vazios
-    /*     if (!description || description.trim() === "") {
+    if (!description || description.trim() === "") {
       error = "O campo descrição não pode estar vazio.";
     } else if (!unityType || unityType.trim() === "") {
       error = "O campo unidade não pode estar vazio.";
     } else if (!ncm || ncm.trim() === "") {
       error = "O campo NCM não pode estar vazio.";
-    } else if (!price || price.trim() === "") {
+    } else if (!price || price === "") {
       error = "O campo preço de venda não pode estar vazio.";
-    } */
+    }
 
-    /*    // Se algum erro foi encontrado, define o erro e não envia os dados
+    // Se algum erro foi encontrado, define o erro e não envia os dados
     if (error) {
       setErrorMessage(error);
       return; // Impede o envio dos dados se houver erro
-    } */
+    }
 
     // Se não houver erro, limpa a mensagem de erro
     setErrorMessage(null);
 
-    /*     // Dados do formulário
+    // Dados do formulário
     const dataForm = {
-      description,
+      id: idForEdit,
+      description: description,
       unity_type: unityType,
-      bar_code: parseInt(barCode || ""),
+      bar_code: parseInt(barCode),
       ncm: ncm,
-      ex_ncm: parseInt(exNcm || ""),
-      cestId: cestId,
-      price: parseFloat(price || ""),
-      groupId,
-      subGroupId,
-      reserved_stock: parseInt(reservedStock || ""),
-      stock: parseInt(stock || ""),
-      gross_weight: parseFloat(grossWeight || ""),
-      liquid_weight: parseFloat(liquidWeight || ""),
-    }; */
+      ex_ncm: parseInt(exNcm),
+      cest_code: cestId,
+      price: parseFloat(price),
+      group: parseInt(groupId),
+      sub_group: parseInt(subGroupId),
+      reserved_stock: parseInt(reservedStock),
+      gross_weight: parseFloat(grossWeight),
+      liquid_weight: parseFloat(liquidWeight),
+    };
+
+    console.log("DataFormEdit", dataForm);
 
     // Fazer REQ da API
 
-    /* 
     try {
-      const response = await fetch('http://26.56.52.76:4001/postproducts', {
-        method: 'POST',  // Usando POST para enviar dados
+      const response = await fetch("http://26.56.52.76:8000/product", {
+        method: "PUT", // Usando PUT para enviar dados
         headers: {
-          'Content-Type': 'application/json',  // Especifica que os dados estão em formato JSON
-          'Authorization': 'Bearer seu_token_aqui'  // Se precisar de autenticação
+          "Content-Type": "application/json", // Especifica que os dados estão em formato JSON
         },
-        body: JSON.stringify(dataForm)  // Converte o objeto para JSON
+        body: JSON.stringify(dataForm), // Converte o objeto para JSON
       });
-  
+
       // Verifica se a resposta foi bem-sucedida
       if (!response.ok) {
         toast.error("Ocorreu um erro de requisição, tente novamente!");
+        return;
       }
-  
-      // Converte a resposta para JSON
-      const data = await response.json();
-      console.log('Produto postado com sucesso:', data);
-      toast.success("Produto adicionado com sucesso!");
-  
-    } catch (error) {
-      console.log(error)
-      toast.error('Erro ao postar o produto');
-    } */
 
-    // Resetar o formulário após o envio
-    resetForm();
+      if (response.status === 204) {
+        // Converte a resposta para JSON
+        toast.success("Produto atualizado com sucesso!");
+        setAbleForEdit(true);
+        setEditionButtonText("Habilitar Edição")
+        return;
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Erro ao atualizar o produto");
+    }
   };
 
   // Função para limpar a mensagem de erro quando o usuário começar a digitar (Input)
@@ -284,12 +290,14 @@ const EditarCadastroProdutosSheet: React.FC<
 
       const data = await response.json();
 
-      setSubGroupSelect(data);
-      console.log(data);
+      if (response.ok) {
+        setSubGroupSelect(data);
+        console.log(data);
+      }
 
       if (!response.ok) {
         console.log("Erro na chamada");
-        toast.error("O Grupo procurado não tem Sub-Grupos");
+        console.log("O Grupo procurado não tem Sub-Grupos");
       }
     } catch (err) {
       console.error(err);
@@ -301,14 +309,30 @@ const EditarCadastroProdutosSheet: React.FC<
     setter: React.Dispatch<React.SetStateAction<string>>
   ) => {
     return (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setter(e.target.value); // Atualiza o valor ou atribui null caso esteja vazio
-      setErrorMessage(null); // Limpa a mensagem de erro ao selecionar
-      handleSubGroups(parseInt(e.target.value));
+      const selectedGroupId = e.target.value; // valor do groupId
+      setter(selectedGroupId); // Atualiza o valor de `groupId`
+      setErrorMessage(null); // Limpa as mensagens de erro
+      if (!groupId) {
+        setSubGroupId("");
+      }
+      handleSubGroups(parseInt(selectedGroupId)); // Busca os subgrupos para o grupo selecionado
     };
+  };
+
+  // Função para atualizar o SubGroup
+  const handleSelectChangeSubGroup = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setSubGroupId(e.target.value); // Atualiza o valor de `subGroupId`
+    setErrorMessage(null); // Limpa a mensagem de erro
   };
 
   // Funções para tratar as flags de controle
   useEffect(() => {
+    if (ableForEdit) {
+      //Proíbe limpar o form caso não esteja em momento de edição
+      return;
+    }
     if (clearFormFlag) {
       resetForm();
       handleClearForm();
@@ -319,7 +343,9 @@ const EditarCadastroProdutosSheet: React.FC<
   useEffect(() => {
     if (addProductFlag) {
       handleAddProduct();
-      handleSubmit(); // Passando um objeto vazio como evento
+      // Criação de um evento fictício
+      const fakeEvent = { preventDefault: () => {} };
+      handleSubmit(fakeEvent as React.FormEvent);
       resetFlags(); // Reseta os flags no pai
     }
   }, [addProductFlag, resetFlags, handleAddProduct]);
@@ -329,52 +355,51 @@ const EditarCadastroProdutosSheet: React.FC<
 
     if (ableForEdit == true) {
       setEditionButtonText("Desabilitar Edição");
+      handleSubGroups(parseInt(groupId));
     } else {
       setEditionButtonText("Habilitar Edição");
     }
   };
 
+  // Função para lidar com a mudança no input de busca ncm
+  const handleInputChangeNcm = (value: string) => {
+    setNcm(value); // Atualiza o valor de busca no componente pai
+  };
 
-    // Função para lidar com a mudança no input de busca ncm
-    const handleInputChangeNcm = (value: string) => {
-      setNcm(value); // Atualiza o valor de busca no componente pai
-    };
-  
-    // Função para lidar com a seleção do NCM
-    // Função chamada quando uma opção é selecionada
-    const handleSelectChangeNcm = (
-      selected: { label: string; value: string } | null
-    ) => {
-      if (selected) {
-        setSelectedOptionNcm(selected.value);
-      }
-  
-      if (!selected) {
-        setNcm("");
-        setSelectedOptionNcm(""); // Limpa o valor do input quando a seleção for desfeita
-      }
-    };
-  
-     // Função para lidar com a mudança no input de busca cest
-     const handleInputChangeCEST = (value: string) => {
-      setCestId(value); // Atualiza o valor de busca no componente pai
-    };
-  
-    // Função para lidar com a seleção do CEST
-    // Função chamada quando uma opção é selecionada
-    const handleSelectChangeCEST = (
-      selected: { label: string; value: string } | null
-    ) => {
-      if (selected) {
-        setSelectedOptionCest(selected.value);
-      }
-  
-      if (!selected) {
-        setCestId("");
-        setSelectedOptionCest(""); // Limpa o valor do input quando a seleção for desfeita
-      }
-    };
-  
+  // Função para lidar com a seleção do NCM
+  // Função chamada quando uma opção é selecionada
+  const handleSelectChangeNcm = (
+    selected: { label: string; value: string } | null
+  ) => {
+    if (selected) {
+      setSelectedOptionNcm(selected.value);
+    }
+
+    if (!selected) {
+      setNcm("");
+      setSelectedOptionNcm(""); // Limpa o valor do input quando a seleção for desfeita
+    }
+  };
+
+  // Função para lidar com a mudança no input de busca cest
+  const handleInputChangeCEST = (value: string) => {
+    setCestId(value); // Atualiza o valor de busca no componente pai
+  };
+
+  // Função para lidar com a seleção do CEST
+  // Função chamada quando uma opção é selecionada
+  const handleSelectChangeCEST = (
+    selected: { label: string; value: string } | null
+  ) => {
+    if (selected) {
+      setSelectedOptionCest(selected.value);
+    }
+
+    if (!selected) {
+      setCestId("");
+      setSelectedOptionCest(""); // Limpa o valor do input quando a seleção for desfeita
+    }
+  };
 
   return (
     <main className={styles.main}>
@@ -454,12 +479,13 @@ const EditarCadastroProdutosSheet: React.FC<
                 NCM<span style={{ color: "red" }}>*</span>
               </label>
               <div className={styles.divInputIcon}>
-              <div>
+                <div>
                   <SearchSelectNcm
                     inputValue={ncm} // Usar ncm diretamente em vez de inputValue
                     onInputChange={handleInputChangeNcm}
                     onSelectChange={handleSelectChangeNcm}
                     disabled={ableForEdit}
+                    able={ableForEdit}
                   />
                 </div>
                 <Image
@@ -487,12 +513,13 @@ const EditarCadastroProdutosSheet: React.FC<
             <div className={styles.inputWrapContainer}>
               <label>Código CEST</label>
               <div className={styles.divInputIcon}>
-              <div className={styles.divSpecialSelect}>
+                <div className={styles.divSpecialSelect}>
                   <SearchSelectCest
                     inputValue={cestId} // Usar ncm diretamente em vez de inputValue
                     onInputChange={handleInputChangeCEST}
                     onSelectChange={handleSelectChangeCEST}
                     disabled={ableForEdit}
+                    able={ableForEdit}
                   />
                 </div>
                 <Image
@@ -526,14 +553,12 @@ const EditarCadastroProdutosSheet: React.FC<
               <div className={styles.divInputIcon}>
                 {" "}
                 <select
-                  value={groupId}
+                  value={groupId || "Selecione"}
                   onChange={handleSelectChangeGroup(setGroupId)}
                   disabled={ableForEdit}
                   className={styles.groupInput}
                 >
-                  <option value={dataGetProduct?.[0]?.Group?.name || ""}>
-                    {dataGetProduct?.[0]?.Group?.name || "Selecione"}
-                  </option>
+                  <option value={"Selecione"}>Selecione</option>
                   {groupSelect.map((group) => (
                     <option key={group.id} value={group.id}>
                       {group.name}
@@ -553,19 +578,24 @@ const EditarCadastroProdutosSheet: React.FC<
               <label>Sub grupo</label>
               <div className={styles.divInputIcon}>
                 <select
-                  value={subGroupId}
-                  onChange={handleSelectChangeGroup(setSubGroupId)}
+                  value={subGroupId || "Selecione"}
+                  onChange={handleSelectChangeSubGroup}
                   disabled={ableForEdit}
                   className={styles.subGroupInput}
                 >
-                  <option value={dataGetProduct?.[0]?.SubGroup?.name || ""}>
-                    {dataGetProduct?.[0]?.SubGroup?.name || "Selecione"}
+                  <option value={"Selecione"}>
+                    {subGroupName || "Selecione"}
                   </option>
-                  {subGroupSelect.map((subroup) => (
-                    <option key={subroup.id} value={subroup.id}>
-                      {subroup.name}
-                    </option>
-                  ))}
+                  {/* Exibe a opção "Selecione" caso não tenha seleção */}
+                  {subGroupSelect.length > 0 ? (
+                    subGroupSelect.map((subGroup) => (
+                      <option key={subGroup.id} value={subGroup.id}>
+                        {subGroup.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option disabled>Não há subgrupos disponíveis</option>
+                  )}
                 </select>
                 <Image
                   src={"icons/search-input-icon.svg"}
@@ -593,7 +623,7 @@ const EditarCadastroProdutosSheet: React.FC<
                 type="text"
                 value={stock}
                 onChange={(e) => setStock(e.target.value)}
-                disabled={ableForEdit}
+                disabled={true}
                 onInput={handleInputNumber}
               />
             </div>
@@ -622,10 +652,11 @@ const EditarCadastroProdutosSheet: React.FC<
             <div className={styles.adjustSpace}></div>
           </div>
         </form>
-        <div className={styles.editionButtonDiv}>
+
+      </div>
+      <div className={styles.editionButtonDiv}>
           <button onClick={handleEditionButton}>{editionButtonText}</button>
         </div>
-      </div>
     </main>
   );
 };

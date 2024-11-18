@@ -13,14 +13,16 @@ interface SearchSelectProps {
   inputValue: string;
   onInputChange: (value: string) => void;
   onSelectChange: (selected: { label: string; value: string } | null) => void; // Função para passar a opção selecionada
-  disabled: boolean
+  disabled: boolean;
+  able: boolean
 }
 
 const SearchSelectNcm = ({
   inputValue,
   onInputChange,
   onSelectChange,
-  disabled
+  disabled,
+  able
 }: SearchSelectProps) => {
   const [options, setOptions] = useState<Option[]>([]); // Opções de busca
   const [loading, setLoading] = useState<boolean>(false); // Estado de carregamento
@@ -70,15 +72,16 @@ const SearchSelectNcm = ({
     debouncedSearch(newValue); // Chama a versão debounced
   };
 
-  // Função que é chamada quando o usuário seleciona uma opção
-  const handleSelectChange = (selectedOption: Option | null) => {
-    onSelectChange(selectedOption); // Passa a opção selecionada para o componente pai
-  };
-
   // Função para limpar a seleção
   const handleClearSelection = () => {
     onSelectChange(null); // Limpa a seleção
     onInputChange(""); // Limpa o valor do input
+  };
+
+
+  // Função que é chamada quando o usuário seleciona uma opção
+  const handleSelectChange = (selectedOption: Option | null) => {
+    onSelectChange(selectedOption); // Passa a opção selecionada para o componente pai
   };
 
   //Deixa apenas numeros no input text
@@ -114,7 +117,7 @@ const SearchSelectNcm = ({
                 disabled={disabled}
               />
               {/* Botão para limpar a seleção */}
-              {(inputValue !== "" && selectedItem) && (
+              {inputValue !== "" && selectedItem && !able && (
                 <button
                   type="button"
                   onClick={handleClearSelection}

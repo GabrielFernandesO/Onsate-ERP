@@ -3,7 +3,6 @@ import Downshift from "downshift";
 import debounce from "lodash/debounce";
 import styles from "./SearchSelect.module.css";
 
-// Tipando as opções do select
 interface Option {
   label: string;
   value: string;
@@ -12,15 +11,17 @@ interface Option {
 interface SearchSelectProps {
   inputValue: string;
   onInputChange: (value: string) => void;
-  onSelectChange: (selected: { label: string; value: string } | null) => void; // Função para passar a opção selecionada
+  onSelectChange: (selected: { label: string; value: string } | null) => void;
   disabled: boolean;
+  able: boolean;
 }
 
-const SearchSelectNcm = ({
+const SearchSelectCest = ({
   inputValue,
   onInputChange,
   onSelectChange,
-  disabled
+  disabled,
+  able
 }: SearchSelectProps) => {
   const [options, setOptions] = useState<Option[]>([]); // Opções de busca
   const [loading, setLoading] = useState<boolean>(false); // Estado de carregamento
@@ -34,7 +35,6 @@ const SearchSelectNcm = ({
 
     setLoading(true);
     try {
-      // Requisição de dados ao backend
       const response = await fetch(
         `http://26.56.52.76:8000/cestcode?cestfilter=${query}`
       );
@@ -44,8 +44,8 @@ const SearchSelectNcm = ({
 
       const data = await response.json();
       const formattedOptions = data.map((item: number) => ({
-        label: item,
-        value: item,
+        label: item.toString(),
+        value: item.toString(),
       }));
 
       setOptions(formattedOptions);
@@ -66,13 +66,8 @@ const SearchSelectNcm = ({
 
   // Função que é chamada toda vez que o usuário digita
   const handleInputChange = (newValue: string) => {
-    onInputChange(newValue); // Atualizando o estado no componente pai
+    onInputChange(newValue); // Atualiza o estado no componente pai
     debouncedSearch(newValue); // Chama a versão debounced
-  };
-
-  // Função que é chamada quando o usuário seleciona uma opção
-  const handleSelectChange = (selectedOption: Option | null) => {
-    onSelectChange(selectedOption); // Passa a opção selecionada para o componente pai
   };
 
   // Função para limpar a seleção
@@ -81,7 +76,12 @@ const SearchSelectNcm = ({
     onInputChange(""); // Limpa o valor do input
   };
 
-  //Deixa apenas numeros no input text
+  // Função que é chamada quando o usuário seleciona uma opção
+  const handleSelectChange = (selectedOption: Option | null) => {
+    onSelectChange(selectedOption); // Passa a opção selecionada para o componente pai
+  };
+
+  // Deixa apenas números no input text
   const handleInputNumber = (e: React.FormEvent<HTMLInputElement>): void => {
     const target = e.target as HTMLInputElement;
     target.value = target.value.replace(/\D/g, ""); // Remove qualquer coisa que não seja número
@@ -107,14 +107,14 @@ const SearchSelectNcm = ({
             <div className={styles.inputWrapper}>
               <input
                 {...getInputProps()}
-                value={inputValue ? inputValue : ""} // Controle do valor do input diretamente pelo estado
+                value={inputValue || ""} // Controle do valor do input diretamente pelo estado
                 placeholder="CEST"
                 className={styles.input}
                 onInput={handleInputNumber}
                 disabled={disabled}
               />
               {/* Botão para limpar a seleção */}
-              {inputValue !== "" && selectedItem && (
+              {inputValue !== "" && selectedItem && !able && (
                 <button
                   type="button"
                   onClick={handleClearSelection}
@@ -155,4 +155,4 @@ const SearchSelectNcm = ({
   );
 };
 
-export default SearchSelectNcm;
+export default SearchSelectCest;
