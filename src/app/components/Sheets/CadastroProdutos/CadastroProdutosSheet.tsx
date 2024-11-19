@@ -8,6 +8,7 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 import SearchSelectNcm from "../../SearchSelect/SearchSelectNCM";
 import SearchSelectCest from "../../SearchSelect/SearchSelectCest";
+import ModalUnitiesSelect from "../../ModalUnitiesSelect/ModalUnitiesSelect";
 
 //Interfaces
 
@@ -72,6 +73,11 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const [, setInputValueNcm] = useState<string>("");
   const [, setSelectedOptionNcm] = useState<string | null>(null);
   const [, setSelectedOptionCest] = useState<string | null>(null);
+
+  //Estados do modal para adicionar as unidades nos selects
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState<string | null>(null);
+  const [inputType, setInputType] = useState<"text" | "number">("text");
 
   //DAdos para preencher o select que vem do banco
   useEffect(() => {
@@ -342,6 +348,21 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     }
   };
 
+  //Logica dos modais para adicionar unidades nos selects e lupas 
+  // Função para abrir o modal com o conteúdo apropriado
+  const openModal = (content: string, type: "text" | "number") => {
+    setModalContent(content);
+    setInputType(type); // Define o tipo de input
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalContent(null); // Reseta o conteúdo
+  };
+
+
+
   return (
     <main className={styles.main}>
       <div className={styles.formContainer}>
@@ -387,6 +408,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                   width={20}
                   height={20}
                   alt="searchIcon"
+                  onClick={() => openModal("Modal de Preço", "number")}
                 />
               </div>
             </div>
@@ -560,6 +582,12 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
           </div>
         </form>
       </div>
+      <ModalUnitiesSelect
+        isOpen={isModalOpen}
+        closeModal={closeModal}
+        title={modalContent || ""}
+        inputType={inputType}
+      />
     </main>
   );
 };
