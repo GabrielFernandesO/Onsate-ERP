@@ -185,7 +185,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     // Dados do formulário
     const dataForm = {
       description: description,
-      unity_type: unityType,
+      unity_type: parseInt(unityType || ""),
       ...(barCode && { bar_code: parseInt(barCode) }),
       ncm: ncm,
       ...(exNcm && { ex_ncm: parseInt(exNcm) }),
@@ -290,6 +290,8 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     };
   };
 
+
+
   // Funções para tratar as flags de controle
   useEffect(() => {
     if (clearFormFlag) {
@@ -359,7 +361,24 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const closeModal = () => {
     setIsModalOpen(false);
     setModalContent(null); // Reseta o conteúdo
+    fetchUnityUpdate()
   };
+
+
+  //Toda vez que fechar o modal ele atualiza o select de unity
+  const fetchUnityUpdate = async () => {
+    try {
+      const response = await fetch(`http://26.56.52.76:8000/unitytype`);
+
+      if (response.ok) {
+        const data = await response.json();
+        setUnitySelect(data);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
 
 
 
@@ -398,7 +417,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                 >
                   <option value="">Selecione</option>
                   {unitySelect.map((unity) => (
-                    <option key={unity.name} value={unity.name}>
+                    <option key={unity.id} value={unity.id}>
                       {unity.name}
                     </option>
                   ))}

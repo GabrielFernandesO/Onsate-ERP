@@ -19,8 +19,8 @@
   min-height: 600px;
 }
 
-.modalContent h1{
-    margin-bottom: 30px;
+.modalContent h1 {
+  margin-bottom: 30px;
 }
 
 .close {
@@ -34,6 +34,7 @@
 .tabela {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed; /* Forçar o ajuste de largura com base nas células */
 }
 
 .tabela th {
@@ -44,11 +45,18 @@
   text-align: left;
 }
 
-
 .tabela td {
   border: 1px solid #00000070;
   padding: 4px;
   text-align: left;
+}
+
+.tabela tr:nth-child(odd) {
+  background-color: #f2f2f2; /* Cor de fundo das linhas ímpares */
+}
+
+.tabela tr:nth-child(even) {
+  background-color: #ffffff; /* Cor de fundo das linhas pares */
 }
 
 .containerModal {
@@ -57,6 +65,7 @@
 
 .tableContainer {
   min-width: 450px;
+  max-width: 450px;
 }
 
 .iconsControl {
@@ -71,11 +80,99 @@
   cursor: pointer;
 }
 
-.iconsControl img:hover{
-    background-color: #c7c7c7;
+.iconsControl img:hover {
+  background-color: #c7c7c7;
 }
 
 .iconsControl .iconAdd {
   border: 1px solid black;
   margin-right: 20px;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Fundo escurecido */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.form {
+  position: relative;
+  background-color: white;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.form h3 {
+  margin-bottom: 15px;
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.form input {
+  border: 1.5px solid #00000070;
+  width: 250px;
+  height: 30px;
+  padding: 0px 5px;
+  border-radius: 3px;
+  box-shadow: 0 1.5px 1.5px rgba(0, 0, 0, 0.2),
+    /* Sombra na parte inferior */ -1.5px 0 1.5px rgba(0, 0, 0, 0.2); /* Sombra na parte esquerda */
+  margin-bottom: 20px;
+}
+
+.form input:focus {
+  border: 2px solid rgb(59, 130, 246, 1);
+  outline: none;
+}
+
+.form select:focus {
+  border: 2px solid rgb(59, 130, 246, 1);
+  outline: none;
+}
+
+.inputs {
+  display: flex;
+  flex-direction: column;
+}
+
+.btns {
+  display: flex;
+}
+
+.btns button {
+  border-radius: 8px;
+  padding: 0px 10px;
+  transition: 0.4s;
+  color: white;
+}
+
+.btnSubmit {
+  margin-right: 15px;
+  background-color: #4caf50;
+}
+
+.btnSubmit:hover {
+  background-color: #409443;
+}
+
+.btnCancel {
+  background-color: #f44336;
+}
+
+.btnCancel:hover {
+  background-color: #cf3b31;
+}
+
+.errorMessage {
+  color: red;
 }

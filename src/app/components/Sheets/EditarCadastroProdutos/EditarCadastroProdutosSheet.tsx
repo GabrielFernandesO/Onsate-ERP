@@ -22,6 +22,11 @@ interface GroupOrSubgroup {
   name: string;
 }
 
+interface unityProps {
+  name: string;
+  description: string;
+}
+
 interface GetProductID {
   id: number;
   description: string;
@@ -33,7 +38,8 @@ interface GetProductID {
   liquid_weight: number;
   stock: number;
   ncmId: string;
-  unityTypeId: string;
+  unityTypeId: number;
+  UnityType: unityProps;
   group: number;
   cestId: string;
   sub_group: number;
@@ -58,7 +64,7 @@ const EditarCadastroProdutosSheet: React.FC<
   handleClearForm,
 }) => {
   // Usando os átomos com useAtom para obter e definir o estado
-  const [dataGetProduct, setDataGetProduct] = useState<GetProductID[]>([]);
+  const [, setDataGetProduct] = useState<GetProductID[]>([]);
   const [description, setDescription] = useState<string>("");
   const [unityType, setUnityType] = useState<string>("");
   const [barCode, setBarCode] = useState<string>("");
@@ -210,7 +216,7 @@ const EditarCadastroProdutosSheet: React.FC<
     const dataForm = {
       id: idForEdit,
       description: description,
-      unity_type: unityType,
+      unity_type: parseInt(unityType),
       bar_code: parseInt(barCode),
       ncm: ncm,
       ex_ncm: parseInt(exNcm),
@@ -246,7 +252,7 @@ const EditarCadastroProdutosSheet: React.FC<
         // Converte a resposta para JSON
         toast.success("Produto atualizado com sucesso!");
         setAbleForEdit(true);
-        setEditionButtonText("Habilitar Edição")
+        setEditionButtonText("Habilitar Edição");
         return;
       }
     } catch (error) {
@@ -436,18 +442,19 @@ const EditarCadastroProdutosSheet: React.FC<
               </label>
               <div className={styles.divInputIcon}>
                 <select
-                  value={unityType}
+                  value={unityType || "Selecione"} // 'unityType' deve ser o 'id' da unidade selecionada
                   onChange={handleSelectChange(setUnityType)}
                   className={styles.unityInput}
                   disabled={ableForEdit}
                 >
-                  <option
-                    value={unityType || dataGetProduct?.[0]?.unityTypeId || ""}
-                  >
-                    {unityType || dataGetProduct?.[0]?.unityTypeId || ""}
-                  </option>
+                  {/* Aqui, mostramos o nome da unidade com base no 'unityType' */}
+                  {!unityType && (
+                    <option value="Selecione" disabled>
+                      Selecione
+                    </option>
+                  )}
                   {unitySelect.map((unity) => (
-                    <option key={unity.name} value={unity.name}>
+                    <option key={unity.id} value={unity.id}>
                       {unity.name}
                     </option>
                   ))}
@@ -652,11 +659,10 @@ const EditarCadastroProdutosSheet: React.FC<
             <div className={styles.adjustSpace}></div>
           </div>
         </form>
-
       </div>
       <div className={styles.editionButtonDiv}>
-          <button onClick={handleEditionButton}>{editionButtonText}</button>
-        </div>
+        <button onClick={handleEditionButton}>{editionButtonText}</button>
+      </div>
     </main>
   );
 };
