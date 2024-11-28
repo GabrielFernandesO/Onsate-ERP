@@ -386,6 +386,18 @@ const TableData: React.FC<TableDataProps> = ({
     setIsModalOpen(false); // Fecha o modal após o cancelamento
   };
 
+    //Trava rolagem quando o modal estiver aberto
+    useEffect(() => {
+      if (isModalOpen) {
+        document.body.style.overflow = 'hidden'; // Bloqueia rolagem
+      } else {
+        document.body.style.overflow = 'auto'; // Restaura a rolagem
+      }
+      return () => {
+        document.body.style.overflow = 'auto'; // Garante que a rolagem seja restaurada quando o componente for desmontado
+      };
+    }, [isModalOpen]);
+
   return (
     <main className={styles.main}>
       <ModalAction

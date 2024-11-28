@@ -75,6 +75,7 @@ export default function CadastroProdutos({
     setAddProduct(false);
     setAddEdit(false)
     setTableDataActive(true);
+    setClearFormFlag(!clearFormFlag);
   };
 
   // Função para limpar o formulário

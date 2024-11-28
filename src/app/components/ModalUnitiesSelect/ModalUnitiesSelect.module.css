@@ -10,13 +10,15 @@
   align-items: center;
 }
 
+
+
 .modalContent {
   background: white;
   padding: 20px 20px;
   border-radius: 8px;
   position: relative;
-  min-width: 600px;
-  min-height: 600px;
+  min-width: 650px;
+  min-height: 650px;
 }
 
 .modalContent h1 {
@@ -59,6 +61,18 @@
   background-color: #ffffff; /* Cor de fundo das linhas pares */
 }
 
+.tabela tr:hover {
+  background-color: #e6e6e6;
+}
+
+.selecionado {
+  border: 2px solid rgba(0, 0, 255, 0.7);
+}
+
+.defaultSelect{
+  border: 1px solid #00000070;
+}
+
 .containerModal {
   display: flex;
 }
@@ -66,6 +80,23 @@
 .tableContainer {
   min-width: 450px;
   max-width: 450px;
+}
+
+.inputSearch{
+  width: 100%;
+  height: 30px;
+  margin-bottom: 30px;
+}
+
+.inputSearch input{
+  width: 100%;
+  border: 1.5px solid #00000070;
+  height: 30px;
+  padding: 0px 5px;
+  border-radius: 3px;
+  box-shadow: 0 1.5px 1.5px rgba(0, 0, 0, 0.2),
+    /* Sombra na parte inferior */ -1.5px 0 1.5px rgba(0, 0, 0, 0.2); /* Sombra na parte esquerda */
+
 }
 
 .iconsControl {
@@ -84,7 +115,7 @@
   background-color: #c7c7c7;
 }
 
-.iconsControl .iconAdd {
+.iconsControl .iconBorder {
   border: 1px solid black;
   margin-right: 20px;
 }
@@ -110,18 +141,41 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 15px 20px;
+  min-width: 330px
 }
 
 .form h3 {
-  margin-bottom: 15px;
   font-size: 20px;
-  font-weight: 400;
+  font-weight: 500;
+  text-align: center;
 }
+
+.headerForm{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.saveChangesIcons{
+  display: flex;
+  width: 60px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.saveChangesIcons img{
+  cursor: pointer;
+  transition: .4s;
+}
+
+
+
 
 .form input {
   border: 1.5px solid #00000070;
-  width: 250px;
   height: 30px;
   padding: 0px 5px;
   border-radius: 3px;
@@ -142,7 +196,25 @@
 
 .inputs {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.inputs div{
+  display: flex;
   flex-direction: column;
+  justify-content: center;
+}
+
+.sigle{
+  min-width: 60px;
+  max-width: 60px;
+}
+
+.description{
+  min-width: 190px;
+  max-width: 190px;
 }
 
 .btns {
@@ -176,3 +248,49 @@
 .errorMessage {
   color: red;
 }
+
+
+.paginacao {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.paginacao {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.paginacao div {
+  margin-right: 8px;
+}
+
+.paginacao button {
+  padding: 0px 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: transparent;
+  background-color: transparent;
+  margin-left: 5px;
+  transition: 0.4s;
+  font-weight: bold;
+}
+
+.paginacao button:hover {
+  background-color: #d9d9d9;
+  color: white;
+}
+
+.btnArrowLeft svg {
+  transform: rotate(180deg);
+  transform-origin: center; /* Alinha o ponto de rotação ao centro do SVG */
+}
+
+.paginacao button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+

@@ -128,8 +128,8 @@ const EditarCadastroProdutosSheet: React.FC<
         const dataProduct = await responseProductEdit.json();
 
         // Atualiza os estados com os dados recebidos
-        setUnitySelect(dataUnity);
-        setGroupSelect(dataGroup);
+        setUnitySelect(dataUnity.unityTypes);
+        setGroupSelect(dataGroup.groups);
         setDataGetProduct(dataProduct.products);
 
         //Encurtar sintaxe do set das propriedades abaixo
@@ -297,7 +297,7 @@ const EditarCadastroProdutosSheet: React.FC<
       const data = await response.json();
 
       if (response.ok) {
-        setSubGroupSelect(data);
+        setSubGroupSelect(data.subgroups);
         console.log(data);
       }
 

@@ -45,9 +45,9 @@ const SearchSelectNcm = ({
       }
 
       const data = await response.json();
-      const formattedOptions = data.map((item: { id: string }) => ({
-        label: item.id,
-        value: item.id,
+      const formattedOptions = data.ncms.map((item: { ncm: string }) => ({
+        label: item.ncm,
+        value: item.ncm,
       }));
 
       setOptions(formattedOptions);

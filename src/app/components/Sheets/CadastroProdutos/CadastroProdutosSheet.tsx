@@ -77,7 +77,6 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   //Estados do modal para adicionar as unidades nos selects
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState<string | null>(null);
-  const [inputType, setInputType] = useState<"text" | "number">("text");
 
   //DAdos para preencher o select que vem do banco
   useEffect(() => {
@@ -100,10 +99,11 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
         const dataGroup = await responseGroups.json();
 
         // Atualiza os estados com os dados recebidos
-        setUnitySelect(dataUnity);
-        setGroupSelect(dataGroup);
+        setUnitySelect(dataUnity.unityTypes);
+        setGroupSelect(dataGroup.groups);
 
-        console.log(dataGroup, "Aqui");
+        console.log(dataUnity, "dataUnity");
+        console.log(dataGroup, "dataGroup");
       } catch (error) {
         console.error("Erro na requisição:", error);
       }
@@ -126,7 +126,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
 
         const data = await response.json();
 
-        setSubGroupSelect(data);
+        setSubGroupSelect(data.subgroups);
         console.log(data);
 
         if (!response.ok) {
@@ -290,8 +290,6 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     };
   };
 
-
-
   // Funções para tratar as flags de controle
   useEffect(() => {
     if (clearFormFlag) {
@@ -339,7 +337,6 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const handleSelectChangeCEST = (
     selected: { label: string; value: string } | null
   ) => {
-
     if (selected) {
       setSelectedOptionCest(selected.value);
     }
@@ -350,20 +347,18 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     }
   };
 
-  //Logica dos modais para adicionar unidades nos selects e lupas 
+  //Logica dos modais para adicionar unidades nos selects e lupas
   // Função para abrir o modal com o conteúdo apropriado
-  const openModal = (content: string, type: "text" | "number") => {
+  const openModal = (content: string) => {
     setModalContent(content);
-    setInputType(type); // Define o tipo de input
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setModalContent(null); // Reseta o conteúdo
-    fetchUnityUpdate()
+    fetchUnityUpdate();
   };
-
 
   //Toda vez que fechar o modal ele atualiza o select de unity
   const fetchUnityUpdate = async () => {
@@ -372,15 +367,29 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
 
       if (response.ok) {
         const data = await response.json();
-        setUnitySelect(data);
+        setUnitySelect(data.unityTypes);
       }
     } catch (err) {
       console.log(err);
     }
   };
 
+  const handleSelectUnityTable = (unityId: number) => {
+    const idString = unityId.toString();
+    setUnityType(idString);
+  };
 
-
+  //Trava rolagem quando o modal estiver aberto
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden'; // Bloqueia rolagem
+    } else {
+      document.body.style.overflow = 'auto'; // Restaura a rolagem
+    }
+    return () => {
+      document.body.style.overflow = 'auto'; // Garante que a rolagem seja restaurada quando o componente for desmontado
+    };
+  }, [isModalOpen]);
 
   return (
     <main className={styles.main}>
@@ -427,7 +436,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                   width={20}
                   height={20}
                   alt="searchIcon"
-                  onClick={() => openModal("Modal de Preço", "number")}
+                  onClick={() => openModal("Modal de Preço")}
                 />
               </div>
             </div>
@@ -605,7 +614,8 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
         isOpen={isModalOpen}
         closeModal={closeModal}
         title={modalContent || ""}
-        inputType={inputType}
+        onSelectUnity={handleSelectUnityTable}
+        selectNumber={-1}
       />
     </main>
   );
