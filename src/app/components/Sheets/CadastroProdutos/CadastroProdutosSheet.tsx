@@ -8,7 +8,7 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 import SearchSelectNcm from "../../SearchSelect/SearchSelectNCM";
 import SearchSelectCest from "../../SearchSelect/SearchSelectCest";
-import ModalUnitiesSelect from "../../ModalUnitiesSelect/ModalUnitiesSelect";
+import ModalUnitiesSelect from "../../ModalsSearchIcon/ModalUnitiesSelect/ModalUnitiesSelect";
 
 //Interfaces
 
@@ -565,12 +565,6 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                     </option>
                   ))}
                 </select>
-                <Image
-                  src={"icons/search-input-icon.svg"}
-                  width={20}
-                  height={20}
-                  alt="searchIcon"
-                />
               </div>
             </div>
 
