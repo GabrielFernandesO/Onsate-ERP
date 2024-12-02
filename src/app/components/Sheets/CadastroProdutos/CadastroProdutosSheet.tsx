@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import SearchSelectNcm from "../../SearchSelect/SearchSelectNCM";
 import SearchSelectCest from "../../SearchSelect/SearchSelectCest";
 import ModalUnitiesSelect from "../../ModalsSearchIcon/ModalUnitiesSelect/ModalUnitiesSelect";
+import ModalGroupSelect from "../../ModalsSearchIcon/ModalGroupsSelect/ModalGroupSelect";
 
 //Interfaces
 
@@ -75,7 +76,8 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const [, setSelectedOptionCest] = useState<string | null>(null);
 
   //Estados do modal para adicionar as unidades nos selects
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpenUnity, setIsModalOpenUnity] = useState(false);
+  const [isModalOpenGroup, setIsModalOpenGroup] = useState(false);
   const [modalContent, setModalContent] = useState<string | null>(null);
 
   //DAdos para preencher o select que vem do banco
@@ -351,13 +353,25 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   // Função para abrir o modal com o conteúdo apropriado
   const openModal = (content: string) => {
     setModalContent(content);
-    setIsModalOpen(true);
+
+    if(content == "Group"){
+      setIsModalOpenGroup(true)
+      return
+    }
+
+    if(content == "Unity"){
+      setIsModalOpenUnity(true);
+      return
+    }
+    
   };
 
   const closeModal = () => {
-    setIsModalOpen(false);
+    setIsModalOpenGroup(false)
+    setIsModalOpenUnity(false);
     setModalContent(null); // Reseta o conteúdo
-    fetchUnityUpdate();
+    fetchUnityUpdate(); //Chama as unidades pro campo quando o modal fecha
+    //Colocar do Group
   };
 
   //Toda vez que fechar o modal ele atualiza o select de unity
@@ -379,9 +393,13 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     setUnityType(idString);
   };
 
+  const handleSelectGroupTable = () => {
+    
+  };
+
   //Trava rolagem quando o modal estiver aberto
   useEffect(() => {
-    if (isModalOpen) {
+    if (isModalOpenUnity || isModalOpenGroup) {
       document.body.style.overflow = 'hidden'; // Bloqueia rolagem
     } else {
       document.body.style.overflow = 'auto'; // Restaura a rolagem
@@ -389,7 +407,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     return () => {
       document.body.style.overflow = 'auto'; // Garante que a rolagem seja restaurada quando o componente for desmontado
     };
-  }, [isModalOpen]);
+  }, [isModalOpenUnity, isModalOpenGroup]);
 
   return (
     <main className={styles.main}>
@@ -436,7 +454,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                   width={20}
                   height={20}
                   alt="searchIcon"
-                  onClick={() => openModal("Modal de Preço")}
+                  onClick={() => openModal("Unity")}
                 />
               </div>
             </div>
@@ -546,6 +564,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                   width={20}
                   height={20}
                   alt="searchIcon"
+                  onClick={() => openModal("Group")}
                 />
               </div>
             </div>
@@ -605,10 +624,17 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
         </form>
       </div>
       <ModalUnitiesSelect
-        isOpen={isModalOpen}
+        isOpen={isModalOpenUnity}
         closeModal={closeModal}
         title={modalContent || ""}
         onSelectUnity={handleSelectUnityTable}
+        selectNumber={-1}
+      />
+      <ModalGroupSelect
+        isOpen={isModalOpenGroup}
+        closeModal={closeModal}
+        title={modalContent || ""}
+        onSelectUnity={handleSelectGroupTable}
         selectNumber={-1}
       />
     </main>
