@@ -36,7 +36,6 @@ const tableFilter: ItemFilter[] = [
   },
 ];
 
-
 const limitItemsPerPage = 12;
 
 const ModalUnitiesSelect: React.FC<ModalProps> = ({
@@ -47,14 +46,15 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
 }) => {
   const [data, setData] = useState<groupData[]>([]);
   const [addData, setAddData] = useState(false);
+  const [addDataSubGroup, setAddDataSubGroup] = useState(false);
   const [nameUnity, setNameUnity] = useState("");
-  const [descriptionUnity, setDescriptionUnity] = useState("");
+  const [group, setGroup] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(0);
 
   const [totalPages, setTotalPages] = useState<number>(0);
   const [selected, setSelected] = useState<number>(-1);
-  const [initialTotalPages, setInitialTotalPages] = useState<number>(0)
+  const [initialTotalPages, setInitialTotalPages] = useState<number>(0);
   const [initialUnities, setInitialUnities] = useState<groupData[]>([]);
   const [dropDownSearch, setDropDownSearch] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -73,7 +73,9 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `http://26.56.52.76:8000/group?limit=${limitItemsPerPage}&page=${currentPage + 1}
+          `http://26.56.52.76:8000/group?limit=${limitItemsPerPage}&page=${
+            currentPage + 1
+          }
           }`
         );
 
@@ -82,7 +84,7 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
           setData(data.groups);
           setInitialUnities(data.groups);
           setTotalPages(data.totalPages);
-          setInitialTotalPages(data.totalPages)
+          setInitialTotalPages(data.totalPages);
         }
       } catch (err) {
         console.log(err);
@@ -94,9 +96,7 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
 
   const fetchUpdateTable = async () => {
     try {
-      const response = await fetch(
-        `http://26.56.52.76:8000/group?limit=12`
-      );
+      const response = await fetch(`http://26.56.52.76:8000/group?limit=12`);
 
       if (response.ok) {
         const data = await response.json();
@@ -113,7 +113,7 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
   //Limpa os campos de adicionar a unidade
   const clearForm = () => {
     setNameUnity("");
-    setDescriptionUnity("");
+    setGroup("");
   };
 
   //Permite apenas Letras
@@ -125,27 +125,28 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
 
   //Abre o Modal para adicionar
   const handleAddData = () => {
-    setAddData(!addData);
+    setAddData(true);
+    setErrorMessage(null);
+  };
+
+  const handleAddDataSubGroup = () => {
+    setAddDataSubGroup(true);
     setErrorMessage(null);
   };
 
   const handleCloseModal = () => {
-    setAddData(!addData);
+    setAddData(false);
+    setAddDataSubGroup(false)
     setErrorMessage(null);
     setSelectedOption(null);
     setSearchTerm("");
-  }
+  };
 
   //Post do novo data
   const handlePostData = async () => {
     let error: string | null = null;
 
-    if (
-      nameUnity == "" ||
-      descriptionUnity == "" ||
-      !nameUnity ||
-      !descriptionUnity
-    ) {
+    if (nameUnity == "" || group == "" || !nameUnity || !group) {
       error = "Há campos vazios!";
     }
 
@@ -158,14 +159,14 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
 
     const formData = {
       name: nameUnity,
-      description: descriptionUnity,
+      description: group,
     };
 
     console.log(formData);
 
     try {
       const response = await fetch(
-        "http://26.56.52.76:8000/?limit=2", //<CORRIJIR
+        "", //<CORRIJIR
         {
           method: "POST",
           headers: {
@@ -239,9 +240,8 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
     setSelectedOption(null);
     setSearchTerm("");
     setData(initialUnities);
-    setCurrentPage(0)
-    setTotalPages(initialTotalPages)
-
+    setCurrentPage(0);
+    setTotalPages(initialTotalPages);
   };
 
   //Verifica se o clique foi fora do dropdown para fechar
@@ -307,14 +307,14 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
   return (
     <div className={styles.modal}>
       <div className={styles.modalContent}>
-        <h1>Grupos e Sub grupos</h1>
+        <h1>Grupo / Sub grupo</h1>
         <div className={styles.containerModal}>
           <div className={styles.tableContainer}>
             {addData && (
               <div className={styles.modalOverlay}>
                 <form className={styles.form}>
                   <div className={styles.headerForm}>
-                    <h3>Adicionar grupo</h3>
+                    <h3>Adicionar Grupo</h3>
                     <div className={styles.saveChangesIcons}>
                       <Image
                         src={"/icons/disket-no-borders.svg"}
@@ -340,24 +340,56 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
                   <div className={styles.inputs}>
                     <div>
                       {" "}
-                      <label>Sigla</label>
-                      <input
-                        type="text"
-                        maxLength={4}
-                        placeholder="ex: Kg"
-                        onChange={(e) => setNameUnity(e.target.value)}
-                        onInput={handleInputLetters}
-                        className={styles.sigle}
-                      />
-                    </div>
-                    <div>
-                      {" "}
-                      <label>Descrição</label>
+                      <label>Grupo</label>
                       <input
                         type="text"
                         maxLength={20}
-                        placeholder="ex: Quilograma"
-                        onChange={(e) => setDescriptionUnity(e.target.value)}
+                        placeholder="ex: Roupas"
+                        onChange={(e) => setGroup(e.target.value)}
+                        onInput={handleInputLetters}
+                        className={styles.description}
+                      />
+                    </div>
+                  </div>
+                </form>
+              </div>
+            )}{" "}
+            {addDataSubGroup && (
+              <div className={styles.modalOverlay}>
+                <form className={styles.form}>
+                  <div className={styles.headerForm}>
+                    <h3>Adicionar Sub Grupo</h3>
+                    <div className={styles.saveChangesIcons}>
+                      <Image
+                        src={"/icons/disket-no-borders.svg"}
+                        width={22}
+                        height={22}
+                        alt="save-icon"
+                        onClick={handlePostData}
+                      />
+                      <Image
+                        src={"/icons/back-no-borders.svg"}
+                        width={22}
+                        height={22}
+                        alt="back-icon"
+                        onClick={handleCloseModal}
+                      />
+                    </div>
+                  </div>
+                  {errorMessage && (
+                    <div className={styles.errorMessage}>
+                      <p>{errorMessage}</p>
+                    </div>
+                  )}
+                  <div className={styles.inputs}>
+                    <div>
+                      {" "}
+                      <label>Grupo</label>
+                      <input
+                        type="text"
+                        maxLength={20}
+                        placeholder="ex: Roupas"
+                        onChange={(e) => setGroup(e.target.value)}
                         onInput={handleInputLetters}
                         className={styles.description}
                       />
@@ -426,7 +458,7 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
               <table className={styles.tabela}>
                 <thead>
                   <tr>
-                    <th>Código</th>
+                    <th className={styles.columnCode}>Código</th>
                     <th>Grupo</th>
                   </tr>
                 </thead>
@@ -501,11 +533,19 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
               className={styles.iconBorder}
             />
             <Image
-              src={"icons/add-icon.svg"}
+              src={"icons/add-group.svg"}
               width={30}
               height={30}
               alt="add-icon"
               onClick={handleAddData}
+              className={styles.iconBorder}
+            />
+            <Image
+              src={"icons/add-subgroup.svg"}
+              width={30}
+              height={30}
+              alt="add-icon"
+              onClick={handleAddDataSubGroup}
               className={styles.iconBorder}
             />
             <Image

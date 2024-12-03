@@ -425,7 +425,7 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
               <table className={styles.tabela}>
                 <thead>
                   <tr>
-                    <th>Código</th>
+                    <th className={styles.columnCode}>Código</th>
                     <th>Sigla</th>
                     <th>Descrição</th>
                   </tr>
