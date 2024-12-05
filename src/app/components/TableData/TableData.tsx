@@ -18,6 +18,11 @@ interface GroupOrSubgroup {
   name: string;
 }
 
+interface UnityType{
+  name: string
+  description: string
+}
+
 interface Products {
   id: number;
   description: string;
@@ -29,7 +34,7 @@ interface Products {
   liquid_weight: number;
   stock: number;
   ncmId: string;
-  unityTypeId: string;
+  UnityType: UnityType;
   groupId: number;
   cestId: string;
   subGroupId: number;
@@ -546,7 +551,7 @@ const TableData: React.FC<TableDataProps> = ({
               <td className={styles.colunaCodigo}>{item.id}</td>
               <td>{item.bar_code}</td>
               <td className={styles.colunaDescricao}>{item.description}</td>
-              <td className={styles.colunaUnidade}>{item.unityTypeId}</td>
+              <td className={styles.colunaUnidade}>{item.UnityType.name}</td>
               <td className={styles.colunaPrecoVenda}>
                 R$ {item.price.toFixed(2)}
               </td>

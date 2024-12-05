@@ -370,8 +370,8 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     setIsModalOpenGroup(false)
     setIsModalOpenUnity(false);
     setModalContent(null); // Reseta o conteúdo
-    fetchUnityUpdate(); //Chama as unidades pro campo quando o modal fecha
-    //Colocar do Group
+    fetchUnityUpdate() //Chama as unidades pro campo quando o modal fecha
+    fetchGroupUpdate();  //Chama as Grupos pro campo quando o modal fecha
   };
 
   //Toda vez que fechar o modal ele atualiza o select de unity
@@ -388,13 +388,28 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     }
   };
 
+  const fetchGroupUpdate = async () => {
+    try {
+      const response = await fetch(`http://26.56.52.76:8000/group`);
+
+      if (response.ok) {
+        const data = await response.json();
+        setGroupSelect(data.groups);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const handleSelectUnityTable = (unityId: number) => {
     const idString = unityId.toString();
     setUnityType(idString);
   };
 
-  const handleSelectGroupTable = () => {
-    
+  const handleSelectGroupTable = (groupId: number) => {
+    const idString = groupId.toString();
+    setGroupId(idString);
+    handleSubGroups(groupId)
   };
 
   //Trava rolagem quando o modal estiver aberto

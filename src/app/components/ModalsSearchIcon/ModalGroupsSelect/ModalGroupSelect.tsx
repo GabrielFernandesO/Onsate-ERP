@@ -9,6 +9,12 @@ interface groupData {
   name: string;
 }
 
+interface subGroupData {
+  id: number
+  name: string;
+  groupsId: number;
+}
+
 interface ModalProps {
   isOpen: boolean;
   closeModal: () => void;
@@ -45,20 +51,27 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
   selectNumber,
 }) => {
   const [data, setData] = useState<groupData[]>([]);
+  const [subData, setSubData] = useState<subGroupData[]>([]);
   const [addData, setAddData] = useState(false);
   const [addDataSubGroup, setAddDataSubGroup] = useState(false);
-  const [nameUnity, setNameUnity] = useState("");
+  const [, setNameUnity] = useState("");
   const [group, setGroup] = useState("");
+  const [groupForSub, setGroupForSub] = useState("");
+  const [subgroup, setSubGroup] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(0);
 
   const [totalPages, setTotalPages] = useState<number>(0);
   const [selected, setSelected] = useState<number>(-1);
+  const[tempId, setTempId] = useState<number>(-1);
   const [initialTotalPages, setInitialTotalPages] = useState<number>(0);
   const [initialUnities, setInitialUnities] = useState<groupData[]>([]);
   const [dropDownSearch, setDropDownSearch] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [currentPageSub, setCurrentPageSub] = useState<number>(0);
+  const [totalPagesSub, setTotalPagesSub] = useState<number>(0);
+
 
   useEffect(() => {
     setSelected(selectNumber); // Update selected state based on selectNumber prop
@@ -94,6 +107,26 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
     fetchData();
   }, [currentPage]);
 
+  useEffect(() => {
+    const fetchSub = async() =>{
+      try {
+        const response = await fetch(
+          `http://26.56.52.76:8000/subgroup?groupsId=${tempId}&page=${currentPageSub + 1 }&limit=4`
+        );
+  
+        if (response.ok) {
+          const data = await response.json();
+          setSubData(data.subgroups);
+          setTotalPagesSub(data.totalPages);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    fetchSub()
+  }, [currentPageSub, tempId]);
+
   const fetchUpdateTable = async () => {
     try {
       const response = await fetch(`http://26.56.52.76:8000/group?limit=12`);
@@ -110,6 +143,23 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
     }
   };
 
+  const fetchSubgroupsForGroup = async (id: number) => {
+    try {
+      const response = await fetch(
+        `http://26.56.52.76:8000/subgroup?groupsId=${id}&page=${currentPageSub + 1 }&limit=4`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setSubData(data.subgroups);
+        setTotalPagesSub(data.totalPages);
+        setCurrentPageSub(0);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   //Limpa os campos de adicionar a unidade
   const clearForm = () => {
     setNameUnity("");
@@ -120,7 +170,7 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
   const handleInputLetters = (e: React.FormEvent<HTMLInputElement>): void => {
     const target = e.target as HTMLInputElement;
     // Substitui qualquer coisa que não seja uma letra (A-Z, a-z)
-    target.value = target.value.replace(/[^A-Za-záàâãäéèêíïóôõöúüç ]/g, "");
+    target.value = target.value.replace(/[^A-Za-záàâãäéèêíïóôõöúüç0-9 ]/g, "");
   };
 
   //Abre o Modal para adicionar
@@ -130,24 +180,39 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
   };
 
   const handleAddDataSubGroup = () => {
+    if (selected === -1) {
+      toast.info("Selecione um grupo");
+      setTempId(-1)
+      return;
+    }
     setAddDataSubGroup(true);
     setErrorMessage(null);
+    const groupSelected = data.filter((item, index) => index === selected);
+    setGroupForSub(groupSelected[0].name);
+    setTempId(groupSelected[0].id)
+    fetchSubgroupsForGroup(groupSelected[0].id);
+    setSelected(-1)
+
+    console.log(groupSelected);
   };
 
   const handleCloseModal = () => {
     setAddData(false);
-    setAddDataSubGroup(false)
+    setAddDataSubGroup(false);
     setErrorMessage(null);
     setSelectedOption(null);
     setSearchTerm("");
+    setSelected(-1);
+    setGroupForSub("");
+    setTempId(-1)
   };
 
-  //Post do novo data
+  //Post do novo data do Grupo somente
   const handlePostData = async () => {
     let error: string | null = null;
 
-    if (nameUnity == "" || group == "" || !nameUnity || !group) {
-      error = "Há campos vazios!";
+    if (group == "" || !group) {
+      error = "Campo grupo está vazio!";
     }
 
     if (error) {
@@ -158,26 +223,22 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
     setErrorMessage(null);
 
     const formData = {
-      name: nameUnity,
-      description: group,
+      name: group,
     };
 
     console.log(formData);
 
     try {
-      const response = await fetch(
-        "", //<CORRIJIR
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch("http://26.56.52.76:8000/group", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
       if (response.status === 201) {
-        toast.success("Unidade Adicionada");
+        toast.success("Grupo Adicionado");
         console.log("Enviou!");
         setAddData(false);
         fetchUpdateTable();
@@ -185,20 +246,82 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
         setErrorMessage(null);
       }
     } catch (err) {
-      toast.error("Ocorreu algum erro ao adicionar a unidade, tente novamente");
+      toast.error("Ocorreu algum erro ao adicionar o grupo, tente novamente");
+      console.log(err);
+    }
+  };
+
+  //Cria o subgroup
+
+  const handlePostDataSub = async () => {
+    let error: string | null = null;
+
+    if (subgroup == "" || !subgroup) {
+      error = "Campo Sub Grupo está vazio!";
+    }
+
+    if (error) {
+      setErrorMessage(error);
+      return; // Impede o envio dos dados se houver erro
+    }
+
+    setErrorMessage(null);
+
+
+    const formData = {
+      groupsId: tempId,
+      name: subgroup,
+    };
+
+    console.log(formData);
+
+    try {
+      const response = await fetch("http://26.56.52.76:8000/subgroup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.status === 201) {
+        toast.success("Sub Grupo Adicionado");
+        console.log("Enviou!");
+        fetchUpdateTable();
+        clearForm();
+        setErrorMessage(null);
+        setSubGroup("");
+        fetchSubgroupsForGroup(tempId)
+      }
+    } catch (err) {
+      toast.error("Ocorreu algum erro ao adicionar o grupo, tente novamente");
       console.log(err);
     }
   };
 
   const handleNextPage = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
+    setCurrentPageSub((prev) => Math.min(prev + 1, totalPagesSub - 1));
     setSelected(-1);
   };
 
   const handlePreviousPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 0));
+    setCurrentPageSub((prev) => Math.max(prev - 1, 0));
     setSelected(-1);
   };
+
+
+  const handleNextPageSub = () => {
+    setCurrentPageSub((prev) => Math.min(prev + 1, totalPagesSub - 1));
+    setSelected(-1);
+  };
+
+  const handlePreviousPageSub = () => {
+    setCurrentPageSub((prev) => Math.max(prev - 1, 0));
+    setSelected(-1);
+  };
+
 
   const handleSelectLine = (index: number) => {
     const novosselecteds = index;
@@ -356,7 +479,7 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
             )}{" "}
             {addDataSubGroup && (
               <div className={styles.modalOverlay}>
-                <form className={styles.form}>
+                <form className={styles.formSub}>
                   <div className={styles.headerForm}>
                     <h3>Adicionar Sub Grupo</h3>
                     <div className={styles.saveChangesIcons}>
@@ -365,7 +488,7 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
                         width={22}
                         height={22}
                         alt="save-icon"
-                        onClick={handlePostData}
+                        onClick={handlePostDataSub}
                       />
                       <Image
                         src={"/icons/back-no-borders.svg"}
@@ -389,10 +512,89 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
                         type="text"
                         maxLength={20}
                         placeholder="ex: Roupas"
-                        onChange={(e) => setGroup(e.target.value)}
+                        disabled
+                        value={groupForSub}
+                        className={styles.description}
+                      />
+                    </div>
+                    <div>
+                      {" "}
+                      <label>Sub Grupo</label>
+                      <input
+                        type="text"
+                        maxLength={20}
+                        placeholder="ex: M"
+                        onChange={(e) => setSubGroup(e.target.value)}
                         onInput={handleInputLetters}
                         className={styles.description}
                       />
+                    </div>
+                  </div>
+                  <div className={styles.divTable}>
+                    <table className={styles.tabela}>
+                      <thead>
+                        <tr>
+                          <th className={styles.columnCode}>Código</th>
+                          <th>Sub Grupo</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {subData.map((item, index) => (
+                          <tr
+                            key={item.id}
+                            className={`${
+                              selected === index ? styles.selecionado : ""
+                            }`}
+                          >
+                            <td>{item.id}</td>
+                            <td>{item.name}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div className={styles.paginacao}>
+                      <div>
+                        Página {currentPageSub + 1} de{" "}
+                        {totalPagesSub == 0 ? 1 : totalPagesSub}
+                      </div>
+                      <button
+                        className={styles.btnArrowLeft}
+                        onClick={handlePreviousPageSub}
+                        disabled={currentPageSub === 0}
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M7.979 10L4.1665 6.16667L5.33317 5L10.3332 10L5.33317 15L4.1665 13.8333L7.979 10ZM13.479 10L9.6665 6.16667L10.8332 5L15.8332 10L10.8332 15L9.6665 13.8333L13.479 10Z"
+                            fill="black"
+                            fillOpacity="0.8"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={handleNextPageSub}
+                        disabled={currentPageSub >= totalPagesSub - 1}
+                        className={styles.btnArrowRight}
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M7.979 10L4.1665 6.16667L5.33317 5L10.3332 10L5.33317 15L4.1665 13.8333L7.979 10ZM13.479 10L9.6665 6.16667L10.8332 5L15.8332 10L10.8332 15L9.6665 13.8333L13.479 10Z"
+                            fill="black"
+                            fillOpacity="0.8"
+                          />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 </form>
