@@ -344,7 +344,9 @@ const ModalUnitiesSelect: React.FC<ModalProps> = ({
     if (selected == -1) {
       return;
     }
-    handleDoubleClick(selected + 1);
+
+    const groupSelected = data.filter((item, index) => index === selected);
+    handleDoubleClick(groupSelected[0].id);
   };
 
   //Dropdown da barra de pesquisa

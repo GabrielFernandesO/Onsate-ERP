@@ -10,6 +10,8 @@ import SearchSelectNcm from "../../SearchSelect/SearchSelectNCM";
 import SearchSelectCest from "../../SearchSelect/SearchSelectCest";
 import ModalUnitiesSelect from "../../ModalsSearchIcon/ModalUnitiesSelect/ModalUnitiesSelect";
 import ModalGroupSelect from "../../ModalsSearchIcon/ModalGroupsSelect/ModalGroupSelect";
+import ModalNCM from "../../ModalsSearchIcon/ModalNCM/ModalNCM";
+import ModalCEST from "../../ModalsSearchIcon/ModalCEST/ModalCEST";
 
 //Interfaces
 
@@ -78,6 +80,8 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   //Estados do modal para adicionar as unidades nos selects
   const [isModalOpenUnity, setIsModalOpenUnity] = useState(false);
   const [isModalOpenGroup, setIsModalOpenGroup] = useState(false);
+  const [isModalOpenNcm, setIsModalOpenNcm] = useState(false);
+  const [isModalOpenCest, setIsModalOpenCest] = useState(false);
   const [modalContent, setModalContent] = useState<string | null>(null);
 
   //DAdos para preencher o select que vem do banco
@@ -363,12 +367,24 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
       setIsModalOpenUnity(true);
       return
     }
+
+    if(content == "Ncm"){
+      setIsModalOpenNcm(true)
+      return
+    }
+
+    if(content == "Cest"){
+      setIsModalOpenCest(true)
+      return
+    }
     
   };
 
   const closeModal = () => {
     setIsModalOpenGroup(false)
     setIsModalOpenUnity(false);
+    setIsModalOpenNcm(false);
+    setIsModalOpenCest(false)
     setModalContent(null); // Reseta o conteúdo
     fetchUnityUpdate() //Chama as unidades pro campo quando o modal fecha
     fetchGroupUpdate();  //Chama as Grupos pro campo quando o modal fecha
@@ -412,9 +428,19 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     handleSubGroups(groupId)
   };
 
+  const handleValueNcmInput = (ncm: string) =>{
+    setNcm(ncm)
+  }
+
+  const handleValueCestInput = (cest: string) =>{
+    setCestId(cest)
+  }
+
+
+
   //Trava rolagem quando o modal estiver aberto
   useEffect(() => {
-    if (isModalOpenUnity || isModalOpenGroup) {
+    if (isModalOpenUnity || isModalOpenGroup || isModalOpenNcm) {
       document.body.style.overflow = 'hidden'; // Bloqueia rolagem
     } else {
       document.body.style.overflow = 'auto'; // Restaura a rolagem
@@ -422,7 +448,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     return () => {
       document.body.style.overflow = 'auto'; // Garante que a rolagem seja restaurada quando o componente for desmontado
     };
-  }, [isModalOpenUnity, isModalOpenGroup]);
+  }, [isModalOpenUnity, isModalOpenGroup, isModalOpenNcm]);
 
   return (
     <main className={styles.main}>
@@ -506,6 +532,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                   width={20}
                   height={20}
                   alt="searchIcon"
+                  onClick={() => openModal("Ncm")}
                 />
               </div>
             </div>
@@ -538,6 +565,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
                   width={20}
                   height={20}
                   alt="searchIcon"
+                  onClick={() => openModal("Cest")}
                 />
               </div>
             </div>
@@ -651,6 +679,20 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
         title={modalContent || ""}
         onSelectUnity={handleSelectGroupTable}
         selectNumber={-1}
+      />
+      <ModalNCM
+      isOpen={isModalOpenNcm}
+      closeModal={closeModal}
+      title={modalContent || ""}
+      onSelectUnity={handleValueNcmInput}
+      selectNumber={-1}
+      />
+      <ModalCEST
+      isOpen={isModalOpenCest}
+      closeModal={closeModal}
+      title={modalContent || ""}
+      onSelectUnity={handleValueCestInput}
+      selectNumber={-1}
       />
     </main>
   );

@@ -43,9 +43,9 @@ const SearchSelectCest = ({
       }
 
       const data = await response.json();
-      const formattedOptions = data.cest.map((item: number) => ({
-        label: item.toString(),
-        value: item.toString(),
+      const formattedOptions = data.cest.map((item:  { cestCode: string }) => ({
+        label: item.cestCode,
+        value: item.cestCode,
       }));
 
       setOptions(formattedOptions);
