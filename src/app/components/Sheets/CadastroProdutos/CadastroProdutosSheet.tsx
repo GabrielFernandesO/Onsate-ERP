@@ -12,6 +12,7 @@ import ModalUnitiesSelect from "../../ModalsSearchIcon/ModalUnitiesSelect/ModalU
 import ModalGroupSelect from "../../ModalsSearchIcon/ModalGroupsSelect/ModalGroupSelect";
 import ModalNCM from "../../ModalsSearchIcon/ModalNCM/ModalNCM";
 import ModalCEST from "../../ModalsSearchIcon/ModalCEST/ModalCEST";
+import Loading from "../../Loading/Loading";
 
 //Interfaces
 
@@ -83,6 +84,14 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const [isModalOpenNcm, setIsModalOpenNcm] = useState(false);
   const [isModalOpenCest, setIsModalOpenCest] = useState(false);
   const [modalContent, setModalContent] = useState<string | null>(null);
+
+  //Controle do botão para limpar os selects
+  const [clearSelectGroup, setClearSelectGroup] = useState(false);
+  const [clearSelectUnity, setClearSelectUnity] = useState(false);
+  const [clearSelectSubGroup, setClearSelectSubGroup] = useState(false);
+
+  //Variavel de loading pós post
+  const [loading, setLoading] = useState(false);
 
   //DAdos para preencher o select que vem do banco
   useEffect(() => {
@@ -162,6 +171,9 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     setGrossWeight(null);
     setLiquidWeight(null);
     setInputValueNcm("");
+    setClearSelectGroup(false)
+    setClearSelectSubGroup(false)
+    setClearSelectUnity(false)
   };
 
   //Function para enviar os dados para o backend
@@ -188,6 +200,9 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     // Se não houver erro, limpa a mensagem de erro
     setErrorMessage(null);
 
+    //Começa o Loading
+    setLoading(true)
+
     // Dados do formulário
     const dataForm = {
       description: description,
@@ -208,7 +223,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
 
     // Fazer REQ da API
     console.log("Formulário enviado com sucesso!", dataForm);
-
+    
     try {
       const response = await fetch("http://26.56.52.76:8000/product", {
         method: "POST",
@@ -233,6 +248,8 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     } catch (error) {
       console.log(error);
       toast.error("Erro ao postar o produto");
+    }finally{
+      setLoading(false)
     }
 
     // Resetar o formulário após o envio
@@ -283,6 +300,7 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
     return (e: React.ChangeEvent<HTMLSelectElement>) => {
       setter(e.target.value || null); // Atualiza o valor ou atribui null caso esteja vazio
       setErrorMessage(null); // Limpa a mensagem de erro ao selecionar
+      setClearSelectUnity(true);
     };
   };
 
@@ -293,6 +311,17 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
       setter(e.target.value || null); // Atualiza o valor ou atribui null caso esteja vazio
       setErrorMessage(null); // Limpa a mensagem de erro ao selecionar
       handleSubGroups(parseInt(e.target.value));
+      setClearSelectGroup(true);
+    };
+  };
+
+  const handleSelectChangeSubGroup = (
+    setter: React.Dispatch<React.SetStateAction<string | null>>
+  ) => {
+    return (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setter(e.target.value || null); // Atualiza o valor ou atribui null caso esteja vazio
+      setErrorMessage(null); // Limpa a mensagem de erro ao selecionar
+      setClearSelectSubGroup(true);
     };
   };
 
@@ -358,36 +387,35 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const openModal = (content: string) => {
     setModalContent(content);
 
-    if(content == "Group"){
-      setIsModalOpenGroup(true)
-      return
+    if (content == "Group") {
+      setIsModalOpenGroup(true);
+      return;
     }
 
-    if(content == "Unity"){
+    if (content == "Unity") {
       setIsModalOpenUnity(true);
-      return
+      return;
     }
 
-    if(content == "Ncm"){
-      setIsModalOpenNcm(true)
-      return
+    if (content == "Ncm") {
+      setIsModalOpenNcm(true);
+      return;
     }
 
-    if(content == "Cest"){
-      setIsModalOpenCest(true)
-      return
+    if (content == "Cest") {
+      setIsModalOpenCest(true);
+      return;
     }
-    
   };
 
   const closeModal = () => {
-    setIsModalOpenGroup(false)
+    setIsModalOpenGroup(false);
     setIsModalOpenUnity(false);
     setIsModalOpenNcm(false);
-    setIsModalOpenCest(false)
+    setIsModalOpenCest(false);
     setModalContent(null); // Reseta o conteúdo
-    fetchUnityUpdate() //Chama as unidades pro campo quando o modal fecha
-    fetchGroupUpdate();  //Chama as Grupos pro campo quando o modal fecha
+    fetchUnityUpdate(); //Chama as unidades pro campo quando o modal fecha
+    fetchGroupUpdate(); //Chama as Grupos pro campo quando o modal fecha
   };
 
   //Toda vez que fechar o modal ele atualiza o select de unity
@@ -425,275 +453,325 @@ const CadastroProdutosSheet: React.FC<CadastroProdutosSheetProps> = ({
   const handleSelectGroupTable = (groupId: number) => {
     const idString = groupId.toString();
     setGroupId(idString);
-    handleSubGroups(groupId)
+    handleSubGroups(groupId);
+    setClearSelectGroup(true);
+    setClearSelectSubGroup(true);
   };
 
-  const handleValueNcmInput = (ncm: string) =>{
-    setNcm(ncm)
-  }
+  const handleValueNcmInput = (ncm: string) => {
+    setNcm(ncm);
+  };
 
-  const handleValueCestInput = (cest: string) =>{
-    setCestId(cest)
-  }
-
-
+  const handleValueCestInput = (cest: string) => {
+    setCestId(cest);
+  };
 
   //Trava rolagem quando o modal estiver aberto
   useEffect(() => {
     if (isModalOpenUnity || isModalOpenGroup || isModalOpenNcm) {
-      document.body.style.overflow = 'hidden'; // Bloqueia rolagem
+      document.body.style.overflow = "hidden"; // Bloqueia rolagem
     } else {
-      document.body.style.overflow = 'auto'; // Restaura a rolagem
+      document.body.style.overflow = "auto"; // Restaura a rolagem
     }
     return () => {
-      document.body.style.overflow = 'auto'; // Garante que a rolagem seja restaurada quando o componente for desmontado
+      document.body.style.overflow = "auto"; // Garante que a rolagem seja restaurada quando o componente for desmontado
     };
   }, [isModalOpenUnity, isModalOpenGroup, isModalOpenNcm]);
 
+  const handleClearSelection = (select: string) => {
+    if (select == "selectGroup") {
+      setGroupId(null);
+      setClearSelectGroup(false);
+    }
+
+    if (select == "selectSubGroup") {
+      setSubGroupId(null);
+      setClearSelectSubGroup(false);
+    }
+
+    if (select == "selectUnity") {
+      setUnityType("");
+      setClearSelectUnity(false);
+    }
+  };
+
   return (
     <main className={styles.main}>
-      <div className={styles.formContainer}>
-        <form onSubmit={handleSubmit}>
-          {errorMessage && (
-            <div className={styles.errorMessage}>
-              <p>{errorMessage}</p>
-            </div>
-          )}
-          <div className={styles.firstLineInput}>
-            <label>
-              Descrição<span style={{ color: "red" }}>*</span>
-            </label>
-            <input
-              type="text"
-              value={description || ""}
-              onChange={handleInputChange(setDescription)}
-              maxLength={100}
-              placeholder="ex: papel grafite"
-            />
-          </div>
-
-          <div className={styles.secondLineInputs}>
-            <div className={styles.inputWrapContainer}>
-              <label>
-                Unidade<span style={{ color: "red" }}>*</span>
-              </label>
-              <div className={styles.divInputIcon}>
-                <select
-                  value={unityType || ""}
-                  onChange={handleSelectChange(setUnityType)}
-                  className={styles.unityInput}
-                >
-                  <option value="">Selecione</option>
-                  {unitySelect.map((unity) => (
-                    <option key={unity.id} value={unity.id}>
-                      {unity.name}
-                    </option>
-                  ))}
-                </select>
-                <Image
-                  src={"icons/search-input-icon.svg"}
-                  width={20}
-                  height={20}
-                  alt="searchIcon"
-                  onClick={() => openModal("Unity")}
+      {loading ? (
+        <Loading />
+      ) : (
+        <>
+          <div className={styles.formContainer}>
+            <form onSubmit={handleSubmit}>
+              {errorMessage && (
+                <div className={styles.errorMessage}>
+                  <p>{errorMessage}</p>
+                </div>
+              )}
+              <div className={styles.firstLineInput}>
+                <label>
+                  Descrição<span style={{ color: "red" }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={description || ""}
+                  onChange={handleInputChange(setDescription)}
+                  maxLength={100}
+                  placeholder="ex: papel grafite"
                 />
               </div>
-            </div>
 
-            <div className={styles.inputWrapContainer}>
-              <label>Código de barras</label>
-              <input
-                type="text"
-                value={barCode || ""}
-                onChange={(e) => setBarCode(e.target.value)}
-                maxLength={13}
-                placeholder="ex: 1698189354175"
-                onInput={handleInputNumber}
-                className={styles.barCodeInput}
-              />
-            </div>
+              <div className={styles.secondLineInputs}>
+                <div className={styles.inputWrapContainer}>
+                  <label>
+                    Unidade<span style={{ color: "red" }}>*</span>
+                  </label>
+                  <div className={styles.divInputIcon}>
+                    <select
+                      value={unityType || ""}
+                      onChange={handleSelectChange(setUnityType)}
+                      className={styles.unityInput}
+                    >
+                      <option value="">Selecione</option>
+                      {unitySelect.map((unity) => (
+                        <option key={unity.id} value={unity.id}>
+                          {unity.name}
+                        </option>
+                      ))}
+                    </select>
+                    <Image
+                      src={"icons/search-input-icon.svg"}
+                      width={20}
+                      height={20}
+                      alt="searchIcon"
+                      onClick={() => openModal("Unity")}
+                    />
+                    {clearSelectUnity && (
+                      <button
+                        type="button"
+                        onClick={() => handleClearSelection("selectUnity")}
+                        className={styles.clearButton}
+                      >
+                        Limpar
+                      </button>
+                    )}
+                  </div>
+                </div>
 
-            <div className={styles.inputWrapContainer}>
-              <label>
-                NCM<span style={{ color: "red" }}>*</span>
-              </label>
-              <div className={styles.divInputIcon}>
-                <div>
-                  <SearchSelectNcm
-                    inputValue={ncm} // Usar ncm diretamente em vez de inputValue
-                    onInputChange={handleInputChangeNcm}
-                    onSelectChange={handleSelectChangeNcm}
-                    disabled={false}
-                    able={false}
+                <div className={styles.inputWrapContainer}>
+                  <label>Código de barras</label>
+                  <input
+                    type="text"
+                    value={barCode || ""}
+                    onChange={(e) => setBarCode(e.target.value)}
+                    maxLength={13}
+                    placeholder="ex: 1698189354175"
+                    onInput={handleInputNumber}
+                    className={styles.barCodeInput}
                   />
                 </div>
-                <Image
-                  src={"icons/search-input-icon.svg"}
-                  width={20}
-                  height={20}
-                  alt="searchIcon"
-                  onClick={() => openModal("Ncm")}
-                />
-              </div>
-            </div>
-            <div className={styles.inputWrapContainer}>
-              <label>EX NCM</label>
-              <input
-                type="text"
-                value={exNcm || ""}
-                onChange={(e) => setExNcm(e.target.value)}
-                placeholder="ex: 1698"
-                maxLength={4}
-                onInput={handleInputNumber}
-                className={styles.ex_ncmInput}
-              />
-            </div>
-            <div className={styles.inputWrapContainer}>
-              <label>Código CEST</label>
-              <div className={styles.divInputIcon}>
-                <div className={styles.divSpecialSelect}>
-                  <SearchSelectCest
-                    inputValue={cestId} // Usar ncm diretamente em vez de inputValue
-                    onInputChange={handleInputChangeCEST}
-                    onSelectChange={handleSelectChangeCEST}
-                    disabled={false}
-                    able={false}
+
+                <div className={styles.inputWrapContainer}>
+                  <label>
+                    NCM<span style={{ color: "red" }}>*</span>
+                  </label>
+                  <div className={styles.divInputIcon}>
+                    <div>
+                      <SearchSelectNcm
+                        inputValue={ncm} // Usar ncm diretamente em vez de inputValue
+                        onInputChange={handleInputChangeNcm}
+                        onSelectChange={handleSelectChangeNcm}
+                        disabled={false}
+                        able={false}
+                      />
+                    </div>
+                    <Image
+                      src={"icons/search-input-icon.svg"}
+                      width={20}
+                      height={20}
+                      alt="searchIcon"
+                      onClick={() => openModal("Ncm")}
+                    />
+                  </div>
+                </div>
+                <div className={styles.inputWrapContainer}>
+                  <label>EX NCM</label>
+                  <input
+                    type="text"
+                    value={exNcm || ""}
+                    onChange={(e) => setExNcm(e.target.value)}
+                    placeholder="ex: 1698"
+                    maxLength={4}
+                    onInput={handleInputNumber}
+                    className={styles.ex_ncmInput}
                   />
                 </div>
-                <Image
-                  src={"icons/search-input-icon.svg"}
-                  width={20}
-                  height={20}
-                  alt="searchIcon"
-                  onClick={() => openModal("Cest")}
-                />
-              </div>
-            </div>
+                <div className={styles.inputWrapContainer}>
+                  <label>Código CEST</label>
+                  <div className={styles.divInputIcon}>
+                    <div className={styles.divSpecialSelect}>
+                      <SearchSelectCest
+                        inputValue={cestId} // Usar ncm diretamente em vez de inputValue
+                        onInputChange={handleInputChangeCEST}
+                        onSelectChange={handleSelectChangeCEST}
+                        disabled={false}
+                        able={false}
+                      />
+                    </div>
+                    <Image
+                      src={"icons/search-input-icon.svg"}
+                      width={20}
+                      height={20}
+                      alt="searchIcon"
+                      onClick={() => openModal("Cest")}
+                    />
+                  </div>
+                </div>
 
-            <div className={styles.inputWrapContainer}>
-              <label>
-                Preço de venda R$<span style={{ color: "red" }}>*</span>
-              </label>
-              <input
-                type="text"
-                value={price || ""}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="ex: 250"
-                onInput={handleInputNumberFloat}
-                className={styles.priceInput}
-              />
-            </div>
+                <div className={styles.inputWrapContainer}>
+                  <label>
+                    Preço de venda R$<span style={{ color: "red" }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={price || ""}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="ex: 250"
+                    onInput={handleInputNumberFloat}
+                    className={styles.priceInput}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.thirdLineInputs}>
+                <div className={styles.inputWrapContainer}>
+                  <label>Grupo</label>
+                  <div className={styles.divInputIcon}>
+                    {" "}
+                    <select
+                      value={groupId || ""}
+                      onChange={handleSelectChangeGroup(setGroupId)}
+                      className={styles.groupInput}
+                    >
+                      <option value="">Selecione</option>
+                      {groupSelect.map((group) => (
+                        <option key={group.id} value={group.id}>
+                          {group.name}
+                        </option>
+                      ))}
+                    </select>
+                    <Image
+                      src={"icons/search-input-icon.svg"}
+                      width={20}
+                      height={20}
+                      alt="searchIcon"
+                      onClick={() => openModal("Group")}
+                    />
+                    {clearSelectGroup && (
+                      <button
+                        type="button"
+                        onClick={() => handleClearSelection("selectGroup")}
+                        className={styles.clearButton}
+                      >
+                        Limpar
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.inputWrapContainer}>
+                  <label>Sub grupo</label>
+                  <div className={styles.divInputIcon}>
+                    <select
+                      value={subGroupId || ""}
+                      onChange={handleSelectChangeSubGroup(setSubGroupId)}
+                      className={styles.subGroupInput}
+                    >
+                      <option value="">Selecione</option>
+                      {subGroupSelect.map((subroup) => (
+                        <option key={subroup.id} value={subroup.id}>
+                          {subroup.name}
+                        </option>
+                      ))}
+                    </select>
+                    {clearSelectSubGroup && (
+                      <button
+                        type="button"
+                        onClick={() => handleClearSelection("selectSubGroup")}
+                        className={styles.clearButton}
+                      >
+                        Limpar
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.inputWrapContainer}>
+                  <label>Estoque reservado</label>
+                  <input
+                    type="text"
+                    value={reservedStock || ""}
+                    onChange={(e) => setReservedStock(e.target.value)}
+                    placeholder="ex: 5"
+                    onInput={handleInputNumber}
+                  />
+                </div>
+
+                <div className={styles.inputWrapContainer}>
+                  <label>Peso Bruto</label>
+                  <input
+                    type="text"
+                    value={grossWeight || ""}
+                    onChange={(e) => setGrossWeight(e.target.value)}
+                    placeholder="ex: 100"
+                    onInput={handleInputNumberFloat}
+                  />
+                </div>
+
+                <div className={styles.inputWrapContainer}>
+                  <label>Peso Líquido</label>
+                  <input
+                    type="text"
+                    value={liquidWeight || ""}
+                    onChange={(e) => setLiquidWeight(e.target.value)}
+                    placeholder="ex: 80"
+                    onInput={handleInputNumberFloat}
+                  />
+                </div>
+                <div className={styles.adjustSpace}></div>
+              </div>
+            </form>
           </div>
-
-          <div className={styles.thirdLineInputs}>
-            <div className={styles.inputWrapContainer}>
-              <label>Grupo</label>
-              <div className={styles.divInputIcon}>
-                {" "}
-                <select
-                  value={groupId || ""}
-                  onChange={handleSelectChangeGroup(setGroupId)}
-                  className={styles.groupInput}
-                >
-                  <option value="">Selecione</option>
-                  {groupSelect.map((group) => (
-                    <option key={group.id} value={group.id}>
-                      {group.name}
-                    </option>
-                  ))}
-                </select>
-                <Image
-                  src={"icons/search-input-icon.svg"}
-                  width={20}
-                  height={20}
-                  alt="searchIcon"
-                  onClick={() => openModal("Group")}
-                />
-              </div>
-            </div>
-
-            <div className={styles.inputWrapContainer}>
-              <label>Sub grupo</label>
-              <div className={styles.divInputIcon}>
-                <select
-                  value={subGroupId || ""}
-                  onChange={handleSelectChange(setSubGroupId)}
-                  className={styles.subGroupInput}
-                >
-                  <option value="">Selecione</option>
-                  {subGroupSelect.map((subroup) => (
-                    <option key={subroup.id} value={subroup.id}>
-                      {subroup.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className={styles.inputWrapContainer}>
-              <label>Estoque reservado</label>
-              <input
-                type="text"
-                value={reservedStock || ""}
-                onChange={(e) => setReservedStock(e.target.value)}
-                placeholder="ex: 5"
-                onInput={handleInputNumber}
-              />
-            </div>
-
-            <div className={styles.inputWrapContainer}>
-              <label>Peso Bruto</label>
-              <input
-                type="text"
-                value={grossWeight || ""}
-                onChange={(e) => setGrossWeight(e.target.value)}
-                placeholder="ex: 100"
-                onInput={handleInputNumberFloat}
-              />
-            </div>
-
-            <div className={styles.inputWrapContainer}>
-              <label>Peso Líquido</label>
-              <input
-                type="text"
-                value={liquidWeight || ""}
-                onChange={(e) => setLiquidWeight(e.target.value)}
-                placeholder="ex: 80"
-                onInput={handleInputNumberFloat}
-              />
-            </div>
-            <div className={styles.adjustSpace}></div>
-          </div>
-        </form>
-      </div>
-      <ModalUnitiesSelect
-        isOpen={isModalOpenUnity}
-        closeModal={closeModal}
-        title={modalContent || ""}
-        onSelectUnity={handleSelectUnityTable}
-        selectNumber={-1}
-      />
-      <ModalGroupSelect
-        isOpen={isModalOpenGroup}
-        closeModal={closeModal}
-        title={modalContent || ""}
-        onSelectUnity={handleSelectGroupTable}
-        selectNumber={-1}
-      />
-      <ModalNCM
-      isOpen={isModalOpenNcm}
-      closeModal={closeModal}
-      title={modalContent || ""}
-      onSelectUnity={handleValueNcmInput}
-      selectNumber={-1}
-      />
-      <ModalCEST
-      isOpen={isModalOpenCest}
-      closeModal={closeModal}
-      title={modalContent || ""}
-      onSelectUnity={handleValueCestInput}
-      selectNumber={-1}
-      />
+          <ModalUnitiesSelect
+            isOpen={isModalOpenUnity}
+            closeModal={closeModal}
+            title={modalContent || ""}
+            onSelectUnity={handleSelectUnityTable}
+            selectNumber={-1}
+          />
+          <ModalGroupSelect
+            isOpen={isModalOpenGroup}
+            closeModal={closeModal}
+            title={modalContent || ""}
+            onSelectUnity={handleSelectGroupTable}
+            selectNumber={-1}
+          />
+          <ModalNCM
+            isOpen={isModalOpenNcm}
+            closeModal={closeModal}
+            title={modalContent || ""}
+            onSelectUnity={handleValueNcmInput}
+            selectNumber={-1}
+          />
+          <ModalCEST
+            isOpen={isModalOpenCest}
+            closeModal={closeModal}
+            title={modalContent || ""}
+            onSelectUnity={handleValueCestInput}
+            selectNumber={-1}
+          />
+        </>
+      )}
     </main>
   );
 };

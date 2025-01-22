@@ -180,3 +180,16 @@
   .editionButtonDiv button:hover{
     background-color: #cccccc;
   }
+
+  .clearButton {
+    border-radius: 5px;
+    background-color: #e0e0e0;
+    margin-left: 8px;
+    height: 100%;
+    padding: 5px 5px;
+    transition: .4s;
+  }
+  
+  .clearButton:hover{
+    background-color: #cccccc;
+  }

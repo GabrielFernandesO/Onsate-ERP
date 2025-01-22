@@ -47,6 +47,7 @@ interface GetProductID {
   updatedAt: string;
   Group: GroupOrSubgroup;
   SubGroup: GroupOrSubgroup;
+  active: boolean;
 }
 
 interface selectType {
@@ -79,6 +80,8 @@ const EditarCadastroProdutosSheet: React.FC<
   const [stock, setStock] = useState<string>("");
   const [grossWeight, setGrossWeight] = useState<string>("");
   const [liquidWeight, setLiquidWeight] = useState<string>("");
+  const [active, setActive] = useState<boolean>()
+
   // Estado de mensagens de erro
   const [errorMessage, setErrorMessage] = useState<string | null>("");
   //ID Edit Cadastro
@@ -98,6 +101,11 @@ const EditarCadastroProdutosSheet: React.FC<
   const [, setInputValueNcm] = useState<string>("");
   const [, setSelectedOptionNcm] = useState<string | null>(null);
   const [, setSelectedOptionCest] = useState<string | null>(null);
+
+  //Controle do botão para limpar os selects
+  const [clearSelectGroup, setClearSelectGroup] = useState(false);
+  const [clearSelectUnity, setClearSelectUnity] = useState(false);
+  const [clearSelectSubGroup, setClearSelectSubGroup] = useState(false);
 
   useEffect(() => {
     // Função para buscar os dados
@@ -150,6 +158,7 @@ const EditarCadastroProdutosSheet: React.FC<
         setStock(product.stock || "");
         setGrossWeight(product.gross_weight || "");
         setLiquidWeight(product.liquid_weight || "");
+        setActive(product.active)
 
         console.log("Product edit", dataProduct.products);
 
@@ -165,7 +174,7 @@ const EditarCadastroProdutosSheet: React.FC<
   //Function para resetar os valores quando o form é enviado
   const resetForm = () => {
     setDescription("");
-    setUnityType("Selecione");
+    setUnityType("");
     setBarCode("");
     setNcm("");
     setExNcm("");
@@ -195,7 +204,7 @@ const EditarCadastroProdutosSheet: React.FC<
     // Verificando se os campos estão vazios
     if (!description || description.trim() === "") {
       error = "O campo descrição não pode estar vazio.";
-    } else if (!unityType || unityType.trim() === "") {
+    } else if (!unityType || unityType === "") {
       error = "O campo unidade não pode estar vazio.";
     } else if (!ncm || ncm.trim() === "") {
       error = "O campo NCM não pode estar vazio.";
@@ -227,6 +236,7 @@ const EditarCadastroProdutosSheet: React.FC<
       reserved_stock: parseInt(reservedStock),
       gross_weight: parseFloat(grossWeight),
       liquid_weight: parseFloat(liquidWeight),
+      active:active
     };
 
     console.log("DataFormEdit", dataForm);
@@ -343,6 +353,9 @@ const EditarCadastroProdutosSheet: React.FC<
       resetForm();
       handleClearForm();
       resetFlags(); // Reseta os flags no pai
+      setClearSelectGroup(false)
+      setClearSelectSubGroup(false)
+      setClearSelectUnity(false)
     }
   }, [clearFormFlag, resetFlags]);
 
@@ -362,8 +375,33 @@ const EditarCadastroProdutosSheet: React.FC<
     if (ableForEdit == true) {
       setEditionButtonText("Desabilitar Edição");
       handleSubGroups(parseInt(groupId));
+      setClearSelectGroup(true);
+      setClearSelectSubGroup(true);
+      setClearSelectUnity(true);
     } else {
       setEditionButtonText("Habilitar Edição");
+      setClearSelectGroup(false);
+      setClearSelectSubGroup(false);
+      setClearSelectUnity(false);
+    }
+  };
+
+  //Botão para limpar os dados dos selects
+  const handleClearSelection = (select: string) => {
+    if (select == "selectGroup") {
+      setGroupId("Selecione");
+      setClearSelectGroup(false);
+    }
+
+    if (select == "selectSubGroup") {
+      setSubGroupId("");
+      setSubGroupName("");
+      setClearSelectSubGroup(false);
+    }
+
+    if (select == "selectUnity") {
+      setUnityType("");
+      setClearSelectUnity(false);
     }
   };
 
@@ -465,6 +503,15 @@ const EditarCadastroProdutosSheet: React.FC<
                   height={20}
                   alt="searchIcon"
                 />
+                {clearSelectUnity && (
+                  <button
+                    type="button"
+                    onClick={() => handleClearSelection("selectUnity")}
+                    className={styles.clearButton}
+                  >
+                    Limpar
+                  </button>
+                )}
               </div>
             </div>
 
@@ -578,6 +625,15 @@ const EditarCadastroProdutosSheet: React.FC<
                   height={20}
                   alt="searchIcon"
                 />
+                {clearSelectGroup && (
+                  <button
+                    type="button"
+                    onClick={() => handleClearSelection("selectGroup")}
+                    className={styles.clearButton}
+                  >
+                    Limpar
+                  </button>
+                )}
               </div>
             </div>
 
@@ -604,12 +660,15 @@ const EditarCadastroProdutosSheet: React.FC<
                     <option disabled>Não há subgrupos disponíveis</option>
                   )}
                 </select>
-                <Image
-                  src={"icons/search-input-icon.svg"}
-                  width={20}
-                  height={20}
-                  alt="searchIcon"
-                />
+                {clearSelectSubGroup && (
+                  <button
+                    type="button"
+                    onClick={() => handleClearSelection("selectSubGroup")}
+                    className={styles.clearButton}
+                  >
+                    Limpar
+                  </button>
+                )}
               </div>
             </div>
 
