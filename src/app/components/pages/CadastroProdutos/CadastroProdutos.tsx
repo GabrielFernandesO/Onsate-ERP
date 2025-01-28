@@ -39,6 +39,7 @@ export default function CadastroProdutos({
   // Estados para controlar o filho (controle do formulário)
   const [clearFormFlag, setClearFormFlag] = useState(false);
   const [addProductFlag, setAddProductFlag] = useState(false);
+  const [status, setStatus] = useState<boolean | undefined>(undefined);
 
   //Function que limpa a página e renderiza o componente de adicionar
   const handleAddComponente = (): void => {
@@ -54,26 +55,26 @@ export default function CadastroProdutos({
     }, 500);
   };
 
-    //Function que limpa a página e renderiza o componente de editar
-    const handleEditComponent = (): void => {
-      setTableDataActive(false);
-  
-      setLoading(true);
-      setTitlePage("");
-  
-      setTimeout(() => {
-        setLoading(false);
-        setTitlePage("Editar Produto");
-        setAddEdit(true);
-      }, 500);
-    };
+  //Function que limpa a página e renderiza o componente de editar
+  const handleEditComponent = (): void => {
+    setTableDataActive(false);
+
+    setLoading(true);
+    setTitlePage("");
+
+    setTimeout(() => {
+      setLoading(false);
+      setTitlePage("Editar Produto");
+      setAddEdit(true);
+    }, 500);
+  };
 
   //Function para retornar ao componente de tabela
   //**** TODA VEZ Q VOLTAR SERÁ UMA NOVA REQ, VER COMO PROCEDER SE DEIXA OU MUDA, como é product novo acredito que deixar como está msm
   const handleBackComponent = (): void => {
     setTitlePage("Cadastro de Produtos");
     setAddProduct(false);
-    setAddEdit(false)
+    setAddEdit(false);
     setTableDataActive(true);
     setClearFormFlag(!clearFormFlag);
   };
@@ -88,13 +89,29 @@ export default function CadastroProdutos({
     setAddProductFlag(true); // Atualiza o estado para sinalizar ao filho que ele deve adicionar o produto
   };
 
+  const handleStatusChange = (newStatus: boolean) => {
+    setStatus(newStatus);
+  };
+
   return (
     <main className={styles.main}>
       <div className={styles.container}>
         {titlePage == "Cadastro de Produtos" && <h1>Cadastro de Produtos</h1>}
         {titlePage !== "Cadastro de Produtos" && (
           <div className={styles.titleButtons}>
-            <h1>{titlePage}</h1>
+            <div className={styles.activeTitle}>
+              <h1>{titlePage} </h1>
+              {titlePage == "Editar Produto" && (
+                <>
+                  {status ? (
+                    <input type="checkbox"  checked/>
+                  ) : (
+                    <input type="checkbox"  />
+                  )}
+                  <label>{status ? "Ativo" : "Inativo"}</label>
+                </>
+              )}
+            </div>
             {!loading && (
               <div className={styles.controlSheetButtons}>
                 <Image
@@ -124,31 +141,35 @@ export default function CadastroProdutos({
         )}
 
         {tableDataActive && (
-          <TableData handleAddProduct={handleAddComponente} handleEditProduct={handleEditComponent} />
+          <TableData
+            handleAddProduct={handleAddComponente}
+            handleEditProduct={handleEditComponent}
+          />
         )}
         {loading && <Loading />}
         {addProduct && (
-               <CadastroProdutosSheet
-               clearFormFlag={clearFormFlag}
-               addProductFlag={addProductFlag}
-               resetFlags={() => {
-                 setClearFormFlag(false);
-                 setAddProductFlag(false);
-               }} // Função para resetar os flags no filho
-               handleAddProduct={handleAddProduct} // Função de adicionar no pai
-               handleClearForm={handleClearForm} // Função de limpar no pai
-             />
+          <CadastroProdutosSheet
+            clearFormFlag={clearFormFlag}
+            addProductFlag={addProductFlag}
+            resetFlags={() => {
+              setClearFormFlag(false);
+              setAddProductFlag(false);
+            }} // Função para resetar os flags no filho
+            handleAddProduct={handleAddProduct} // Função de adicionar no pai
+            handleClearForm={handleClearForm} // Função de limpar no pai
+          />
         )}
         {addEdit && (
-          <EditarCadastroProdutosSheet 
-          clearFormFlag={clearFormFlag}
-          addProductFlag={addProductFlag}
-          resetFlags={() => {
-            setClearFormFlag(false);
-            setAddProductFlag(false);
-          }} // Função para resetar os flags no filho
-          handleAddProduct={handleAddProduct} // Função de adicionar no pai
-          handleClearForm={handleClearForm} // Função de limpar no pai
+          <EditarCadastroProdutosSheet
+            clearFormFlag={clearFormFlag}
+            addProductFlag={addProductFlag}
+            resetFlags={() => {
+              setClearFormFlag(false);
+              setAddProductFlag(false);
+            }} // Função para resetar os flags no filho
+            handleAddProduct={handleAddProduct} // Função de adicionar no pai
+            handleClearForm={handleClearForm} // Função de limpar no pai
+            statusProduct={handleStatusChange}
           />
         )}
       </div>

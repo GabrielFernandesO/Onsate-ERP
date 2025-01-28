@@ -16,6 +16,7 @@ interface EditarCadastroProdutosSheetProps {
   resetFlags: () => void; // Função para resetar os flags
   handleAddProduct: () => void; // Função para adicionar o produto
   handleClearForm: () => void; // Função para limpar o formulário
+  statusProduct: (status: boolean) => void;
 }
 
 interface GroupOrSubgroup {
@@ -63,6 +64,7 @@ const EditarCadastroProdutosSheet: React.FC<
   resetFlags,
   handleAddProduct,
   handleClearForm,
+  statusProduct
 }) => {
   // Usando os átomos com useAtom para obter e definir o estado
   const [, setDataGetProduct] = useState<GetProductID[]>([]);
@@ -159,6 +161,7 @@ const EditarCadastroProdutosSheet: React.FC<
         setGrossWeight(product.gross_weight || "");
         setLiquidWeight(product.liquid_weight || "");
         setActive(product.active)
+        statusProduct(product.active)
 
         console.log("Product edit", dataProduct.products);
 
