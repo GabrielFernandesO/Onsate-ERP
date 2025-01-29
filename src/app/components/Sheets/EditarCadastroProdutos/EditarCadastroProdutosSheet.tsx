@@ -241,7 +241,6 @@ const EditarCadastroProdutosSheet: React.FC<
       reserved_stock: parseInt(reservedStock),
       gross_weight: parseFloat(grossWeight),
       liquid_weight: parseFloat(liquidWeight),
-      active: active,
     };
 
     console.log("DataFormEdit", dataForm);
@@ -304,7 +303,6 @@ const EditarCadastroProdutosSheet: React.FC<
 
   //Function para puxar o relacional do Grupo com seus grupos
   const handleSubGroups = async (id: number) => {
-    
     try {
       const response = await fetch(
         `http://26.56.52.76:8000/subgroup?groupsId=${id}`
@@ -394,13 +392,14 @@ const EditarCadastroProdutosSheet: React.FC<
 
   //Function que ativa e inativa o produto
   const handleActiveInactive = async () => {
-    setLoading(true)
+    setLoading(true);
     const editActiveInactive = {
       id: idForEdit,
+      description: description,
       active: !active,
     };
 
-    try{
+    try {
       const response = await fetch("http://26.56.52.76:8000/product", {
         method: "PUT",
         headers: {
@@ -408,20 +407,18 @@ const EditarCadastroProdutosSheet: React.FC<
         },
         body: JSON.stringify(editActiveInactive),
       });
-  
+
       if (response.ok) {
-        toast.success(`Produto ${active ? "Ativado" : "Inativado"}`);
+        toast.success(`Produto ${active ? "Inativado" : "Ativado"}`);
         setActive(!active);
       } else {
         toast.error("Ocorreu um erro, tente novamente");
       }
-    }catch{
-
-    }finally{
-      setLoading(false)
+    } catch {
+    } finally {
+      setLoading(false);
     }
-    }
-
+  };
 
   //Botão para limpar os dados dos selects
   const handleClearSelection = (select: string) => {
@@ -760,7 +757,10 @@ const EditarCadastroProdutosSheet: React.FC<
         <button onClick={handleEditionButton}>{editionButtonText}</button>
       </div>
       <div className={styles.InactiveButtonDiv}>
-        <button onClick={handleActiveInactive}>
+        <button
+          className={`${styles.buttonActInct} ${active ? styles.inactiveBackground  : styles.activeBackground}`}
+          onClick={handleActiveInactive}
+        >
           {/* Se estiver carregando, exibe a bolinha, caso contrário, exibe o texto condicional */}
           {loading ? (
             <div className={styles.spinner}></div> // Aqui fica a bolinha de carregamento
