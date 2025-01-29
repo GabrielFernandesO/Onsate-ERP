@@ -64,7 +64,7 @@ const EditarCadastroProdutosSheet: React.FC<
   resetFlags,
   handleAddProduct,
   handleClearForm,
-  statusProduct
+  statusProduct,
 }) => {
   // Usando os átomos com useAtom para obter e definir o estado
   const [, setDataGetProduct] = useState<GetProductID[]>([]);
@@ -82,7 +82,7 @@ const EditarCadastroProdutosSheet: React.FC<
   const [stock, setStock] = useState<string>("");
   const [grossWeight, setGrossWeight] = useState<string>("");
   const [liquidWeight, setLiquidWeight] = useState<string>("");
-  const [active, setActive] = useState<boolean>()
+  const [active, setActive] = useState<boolean>();
 
   // Estado de mensagens de erro
   const [errorMessage, setErrorMessage] = useState<string | null>("");
@@ -108,6 +108,8 @@ const EditarCadastroProdutosSheet: React.FC<
   const [clearSelectGroup, setClearSelectGroup] = useState(false);
   const [clearSelectUnity, setClearSelectUnity] = useState(false);
   const [clearSelectSubGroup, setClearSelectSubGroup] = useState(false);
+  // Estado para controlar o carregamento
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Função para buscar os dados
@@ -160,8 +162,8 @@ const EditarCadastroProdutosSheet: React.FC<
         setStock(product.stock || "");
         setGrossWeight(product.gross_weight || "");
         setLiquidWeight(product.liquid_weight || "");
-        setActive(product.active)
-        statusProduct(product.active)
+        setActive(product.active);
+        statusProduct(product.active);
 
         console.log("Product edit", dataProduct.products);
 
@@ -239,7 +241,7 @@ const EditarCadastroProdutosSheet: React.FC<
       reserved_stock: parseInt(reservedStock),
       gross_weight: parseFloat(grossWeight),
       liquid_weight: parseFloat(liquidWeight),
-      active:active
+      active: active,
     };
 
     console.log("DataFormEdit", dataForm);
@@ -302,6 +304,7 @@ const EditarCadastroProdutosSheet: React.FC<
 
   //Function para puxar o relacional do Grupo com seus grupos
   const handleSubGroups = async (id: number) => {
+    
     try {
       const response = await fetch(
         `http://26.56.52.76:8000/subgroup?groupsId=${id}`
@@ -356,9 +359,9 @@ const EditarCadastroProdutosSheet: React.FC<
       resetForm();
       handleClearForm();
       resetFlags(); // Reseta os flags no pai
-      setClearSelectGroup(false)
-      setClearSelectSubGroup(false)
-      setClearSelectUnity(false)
+      setClearSelectGroup(false);
+      setClearSelectSubGroup(false);
+      setClearSelectUnity(false);
     }
   }, [clearFormFlag, resetFlags]);
 
@@ -388,6 +391,37 @@ const EditarCadastroProdutosSheet: React.FC<
       setClearSelectUnity(false);
     }
   };
+
+  //Function que ativa e inativa o produto
+  const handleActiveInactive = async () => {
+    setLoading(true)
+    const editActiveInactive = {
+      id: idForEdit,
+      active: !active,
+    };
+
+    try{
+      const response = await fetch("http://26.56.52.76:8000/product", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json", // Especifica que os dados estão em formato JSON
+        },
+        body: JSON.stringify(editActiveInactive),
+      });
+  
+      if (response.ok) {
+        toast.success(`Produto ${active ? "Ativado" : "Inativado"}`);
+        setActive(!active);
+      } else {
+        toast.error("Ocorreu um erro, tente novamente");
+      }
+    }catch{
+
+    }finally{
+      setLoading(false)
+    }
+    }
+
 
   //Botão para limpar os dados dos selects
   const handleClearSelection = (select: string) => {
@@ -724,6 +758,18 @@ const EditarCadastroProdutosSheet: React.FC<
       </div>
       <div className={styles.editionButtonDiv}>
         <button onClick={handleEditionButton}>{editionButtonText}</button>
+      </div>
+      <div className={styles.InactiveButtonDiv}>
+        <button onClick={handleActiveInactive}>
+          {/* Se estiver carregando, exibe a bolinha, caso contrário, exibe o texto condicional */}
+          {loading ? (
+            <div className={styles.spinner}></div> // Aqui fica a bolinha de carregamento
+          ) : active ? (
+            "Inativar Produto"
+          ) : (
+            "Ativar Produto"
+          )}
+        </button>
       </div>
     </main>
   );
